@@ -1,0 +1,52 @@
+version: "3.7"
+
+services:
+  traefik:
+    container_name: ${POD_NAME}
+    hostname:  ${POD_HOSTNAME}
+    image: traefik
+    restart: always
+    ports:
+      - 80:80
+      - 443:443/tcp
+    networks:
+      - traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./letsencrypt/:/letsencrypt
+      - ./services/:/services
+      - ./log/:/log
+    command:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --api.dashboard
+      - --log=false
+      - --log.filepath=/log/proxy.log
+      - --accesslog=false
+      - --accesslog.filepath=/log/access.log
+      - --log.level=ERROR
+      - --entrypoints.http.address=:80
+      - --entrypoints.http.http.redirections.entrypoint.scheme=https
+      - --entrypoints.http.http.redirections.entrypoint.to=https
+      - --entrypoints.https.address=:443
+      - --certificatesresolvers.default.acme.httpchallenge=true
+      - --certificatesresolvers.default.acme.httpchallenge.entrypoint=http
+      - --certificatesresolvers.default.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.default.acme.storage=/letsencrypt/acme.json
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.file.directory=/services
+      - --providers.file.watch=true
+    labels:
+      traefik.enable: "true"
+      traefik.http.middlewares.basicAuth.basicauth.users: '${TRAEFIK_BASICAUTH_USER}'
+      traefik.http.routers.dashboard.middlewares: 'basicAuth'
+      traefik.http.routers.dashboard.entrypoints: 'https'
+      traefik.http.routers.dashboard.tls.certResolver: default
+      traefik.http.routers.dashboard.rule: 'Host(`${TRAEFIK_DASHBOARD}`)'
+      traefik.http.routers.dashboard.service: 'api@internal'
+
+networks:
+  traefik:
+    name: ${TRAEFIK_NETWORK}
+

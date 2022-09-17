@@ -1,0 +1,57 @@
+#!/bin/bash
+
+PWD="$(
+    cd -- "$(dirname "$0")" >/dev/null 2>&1
+    pwd -P
+)"
+
+if [ ! -f $PWD/.env ]; then
+    cp $PWD/.env.example $PWD/.env
+fi
+
+source $PWD/.env
+
+NAME=$POD_NAME
+EXEC="sh"
+
+## check docker running.
+docker_state=$(docker info >/dev/null 2>&1)
+while [ $? -ne 0 ]; do
+    echo "Docker does not seem to be running, sleep 2.."
+    sleep 2
+done
+
+## init scripts.
+[ "$1" = "init" ] && {
+    echo 'init start services.'
+
+    if [ -d $POD_DATA ]; then
+        mkdir -p $POD_DATA/.init/
+
+        echo -e "#!/bin/sh\n" > $POD_DATA/.init/init.sh
+        echo "sctl enable vnc" >> $POD_DATA/.init/init.sh
+        echo "sctl enable nginx" >> $POD_DATA/.init/init.sh
+    fi
+}
+
+[ "$1" = "clean" ] && {
+    rm -rf $PWD/work $PWD/work
+}
+
+[ "$1" = "rm" ] && {
+    docker-compose down
+}
+
+[ "$1" = "e" ] && {
+    if [ "$2" != "" ]; then
+        EXEC=$2
+    fi
+    docker exec -ti $NAME $EXEC
+}
+
+[ "$1" = "run" ] && {
+    docker-compose down
+    docker-compose up -d
+}
+
+exit 0

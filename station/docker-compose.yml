@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3.9"
 
 services:
   station:
@@ -6,9 +6,11 @@ services:
     hostname: ${POD_HOSTNAME}
     image: ${POD_IMAGE}
     restart: always
+    mem_limit: ${POD_MEM}
+    cpus: ${POD_CPU}
     volumes:
-      - ${POD_DATA}:/work
-      - ./root:/root
+      - ${POD_DATA_WORK}:/work
+      - ${POD_DATA_ROOT}:/root
       - /var/run/docker.sock:/var/run/docker.sock
       - /app:/app
     networks:

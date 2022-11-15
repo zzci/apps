@@ -39,7 +39,7 @@ done
 }
 
 [ "$1" = "rm" ] && {
-    docker-compose down
+    docker compose down
 }
 
 [ "$1" = "e" ] && {
@@ -50,8 +50,8 @@ done
 }
 
 [ "$1" = "run" ] && {
-    docker-compose down
-    docker-compose up -d
+    docker compose down
+    docker compose up -d
 }
 
 exit 0

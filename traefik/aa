@@ -29,7 +29,7 @@ done
 }
 
 [ "$1" = "rm" ] && {
-    docker-compose down
+    docker compose down
 }
 
 [ "$1" = "e" ] && {

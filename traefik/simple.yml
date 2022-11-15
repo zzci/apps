@@ -33,6 +33,12 @@ http:
       service: "nginx"
       tls:
         certResolver: default
+    nginx-default-tls:
+      entryPoints:
+        - "https"
+      rule: "Host(`gs.ds.cc`)"
+      service: "nginx"
+      tls: true
   services:
     nginx:
       loadBalancer:

@@ -31,7 +31,7 @@ services:
       - --entrypoints.https.address=:443
       - --experimental.localPlugins.traefik-auth.modulename=github.com/zzci/traefik-auth
       - --experimental.localPlugins.fail2ban.modulename=github.com/tomMoulard/fail2ban
-      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/soulbalz/traefik-real-ip
+      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/Paxxs/traefik-get-real-ip
       - --certificatesresolvers.default.acme.httpchallenge=true
       - --certificatesresolvers.default.acme.httpchallenge.entrypoint=http
       - --certificatesresolvers.default.acme.email=${ACME_EMAIL}

@@ -4,7 +4,7 @@ services:
   traefik:
     container_name: ${POD_NAME}
     hostname:  ${POD_HOSTNAME}
-    image: traefik
+    image: ${POD_IMAGE}
     restart: always
     ports:
       - 80:80
@@ -13,9 +13,9 @@ services:
       - traefik
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt/:/letsencrypt
-      - ./services/:/services
-      - ./log/:/log
+      - ./letsencrypt:/letsencrypt
+      - ./services:/services
+      - ./log:/log
     command:
       - --global.checknewversion=false
       - --global.sendanonymoususage=false
@@ -29,6 +29,9 @@ services:
       - --entrypoints.http.http.redirections.entrypoint.scheme=https
       - --entrypoints.http.http.redirections.entrypoint.to=https
       - --entrypoints.https.address=:443
+      - --experimental.localPlugins.traefik-auth.modulename=github.com/zzci/traefik-auth
+      - --experimental.localPlugins.fail2ban.modulename=github.com/tomMoulard/fail2ban
+      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/soulbalz/traefik-real-ip
       - --certificatesresolvers.default.acme.httpchallenge=true
       - --certificatesresolvers.default.acme.httpchallenge.entrypoint=http
       - --certificatesresolvers.default.acme.email=${ACME_EMAIL}
@@ -49,4 +52,3 @@ services:
 networks:
   traefik:
     name: ${TRAEFIK_NETWORK}
-

@@ -1,4 +1,4 @@
-version: "3.7"
+version: "3"
 
 services:
   traefik:
@@ -30,8 +30,8 @@ services:
       - --entrypoints.http.http.redirections.entrypoint.to=https
       - --entrypoints.https.address=:443
       - --experimental.localPlugins.traefik-auth.modulename=github.com/zzci/traefik-auth
+      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/zzci/traefik-real-ip
       - --experimental.localPlugins.fail2ban.modulename=github.com/tomMoulard/fail2ban
-      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/Paxxs/traefik-get-real-ip
       - --certificatesresolvers.default.acme.httpchallenge=true
       - --certificatesresolvers.default.acme.httpchallenge.entrypoint=http
       - --certificatesresolvers.default.acme.email=${ACME_EMAIL}

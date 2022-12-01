@@ -1,0 +1,27 @@
+version: '3'
+services:
+  directus:
+    container_name: ${POD_NAME}
+    image: directus/directus:9.21
+    volumes:
+      - ./data/uploads:/directus/uploads
+      - ./data/database:/directus/database
+      - ./data/extensions:/directus/extensions
+    networks:
+      - directus
+    environment:
+      KEY: '8aa5cb8e-1fb1-4a87-b38f-0ade5ad2cc09'
+      SECRET: 'ddb33cb0-41c4-4fd7-bbbf-d94a48e5ef38'
+      HOST: "0.0.0.0"
+      PORT: 8055
+      ADMIN_EMAIL: 'a@demo.io'
+      EXTENSIONS_AUTO_RELOAD: true
+      ADMIN_PASSWORD: 'aaaaaaaa'
+      PUBLIC_URL: 'https://demo.io'
+    user: root
+    command: "sh -c 'chown -R node:node /directus/extensions /directus/uploads /directus/database; npx directus bootstrap; npx directus start'"
+
+networks:
+  directus:
+    name: proxy
+    external: true

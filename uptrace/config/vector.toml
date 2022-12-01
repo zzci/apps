@@ -1,0 +1,21 @@
+[api]
+enabled = true
+address = "0.0.0.0:8686"
+
+[sources.http]
+type = "http_server"
+address = "0.0.0.0:80"
+headers = [ "User-Agent" ]
+encoding = "json"
+
+[sources.docker]
+type = "docker_logs"
+
+[sinks.out]
+type = "http"
+inputs = ["http"]
+encoding.codec = "json"
+framing.method = "newline_delimited"
+compression = "gzip"
+uri = "http://uptrace:14318/api/v1/vector/logs"
+headers.uptrace-dsn = "http://project2_secret_token@localhost:14318/2"

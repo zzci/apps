@@ -13,7 +13,7 @@ services:
       - traefik
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt:/letsencrypt
+      - ./ssl:/ssl
       - ./services:/services
       - ./log:/log
     command:
@@ -35,11 +35,17 @@ services:
       - --certificatesresolvers.default.acme.httpchallenge=true
       - --certificatesresolvers.default.acme.httpchallenge.entrypoint=http
       - --certificatesresolvers.default.acme.email=${ACME_EMAIL}
-      - --certificatesresolvers.default.acme.storage=/letsencrypt/acme.json
+      - --certificatesresolvers.default.acme.storage=/ssl/acme.json
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --providers.file.directory=/services
       - --providers.file.watch=true
+      - --providers.http.endpoint=https://demo.io/config
+      - --providers.http.pollInterval=10s
+      - --providers.http.pollTimeout=60s
+      - --providers.http.tls.cert=/ssl/client.crt
+      - --providers.http.tls.key=/ssl/client.key
+
     labels:
       traefik.enable: "true"
       traefik.http.middlewares.basicAuth.basicauth.users: '${TRAEFIK_BASICAUTH_USER}'

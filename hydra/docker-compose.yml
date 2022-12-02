@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  gid-openid:
+    image: zzci/hydra
+    container_name: gid-openid
+    command: serve -c /etc/config/hydra/hydra.yml all --sqa-opt-out
+    volumes:
+      - ./db:/var/lib/sqlite/
+      - ./config:/etc/config/hydra/
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    restart: unless-stopped
+    depends_on:
+      - gid-openid-migrate
+    user: root
+    networks:
+      - intranet
+  gid-openid-migrate:
+    image: zzci/hydra
+    container_name: gid-openid-init
+    user: root
+    environment:
+      - DSN=sqlite:///var/lib/sqlite/db.sqlite?_fk=true
+    command: migrate -c /etc/config/hydra/hydra.yml sql -e --yes
+    volumes:
+      - ./db:/var/lib/sqlite/
+      - ./config:/etc/config/hydra/
+    restart: on-failure
+    networks:
+      - intranet
+
+networks:
+  intranet:
+    external: true
+    name: proxy

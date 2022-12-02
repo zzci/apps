@@ -1,0 +1,42 @@
+serve:
+  cookies:
+    same_site_mode: Lax
+    domain: "demo.io"
+    names:
+      consent_csrf: "demo_consent_csrf"
+      session: "demo_session"
+      login_csrf: "demo_login_csrf"
+  tls:
+    enable: false
+
+urls:
+  consent: https://login.demo.io/consent
+  login: https://login.demo.io/login
+  logout: https://login.demo.io/logout
+  error: https://login.demo.io/error
+  self:
+    issuer: https://openid.demo.io/
+    public: https://openid.demo.io/
+    admin: https://openid-admin.demo.io/
+
+secrets:
+  system:
+    - 228e5302-c61d-4456-a3fb-26d3626b4638
+
+webfinger:
+  oidc_discovery:
+    supported_claims:
+      - name
+      - email
+      - username
+      - userinfo
+    supported_scope:
+      - profile
+
+oidc:
+  subject_identifiers:
+    supported_types:
+      - pairwise
+      - public
+    pairwise:
+      salt: 228e5302-c61d-4456-a3fb-26d3626b4638

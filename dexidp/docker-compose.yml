@@ -1,0 +1,19 @@
+version: '3'
+
+services:
+  dexidp:
+    image: dexidp/dex
+    container_name: dexidp
+    restart: unless-stopped
+    networks:
+      - proxy
+    command: "dex serve /app/config.yaml"
+    user: root
+    volumes:
+      - ./config/config.yaml:/app/config.yaml
+      - ./data:/app/data
+
+networks:
+  proxy:
+    external: true
+    name: proxy

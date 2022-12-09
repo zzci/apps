@@ -1,0 +1,32 @@
+issuer: https://localhost
+
+storage:
+  type: sqlite3
+  config:
+    file: /app/data/dex.db
+
+web:
+  http: 0.0.0.0:5556
+  allowedOrigins: ["*"]
+staticClients:
+  - id: NetBird
+    redirectURIs:
+      - 'http://127.0.0.1:5555/callback'
+      - '/device/callback'
+    name: 'NetBird'
+    public: true
+
+connectors:
+  - type: mockCallback
+    id: mock
+    name: Example
+
+enablePasswordDB: true
+staticPasswords:
+  - email: "test@test.cc"
+    hash: "$2a$10$99tK8Nv1qSkeREkVRhNB0uLIl34sPF4w6H64BX6mWLBWwYyfNRkSK"
+    username: "admin"
+    userID: "08a8684b-db88-4b73-90a9-3cd1661f5466"
+
+logger:
+  level: debug

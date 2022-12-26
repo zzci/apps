@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  coturn:
+    image: coturn/coturn:4.6-alpine
+    container_name: coturn
+    restart: unless-stopped
+    volumes:
+      - ./config/turnserver.conf:/etc/turnserver.conf:ro
+      - ./config/turn.demo.io.pem:/etc/coturn/ssl/cert.pem:ro
+      - ./config/turn.demo.io-key.pem:/etc/coturn/ssl/key.pem:ro
+      - ./data:/var/db/coturn
+    network_mode: host
+    user: root
+    command:
+      - '--external-ip=$(detect-external-ip)'
+      - '--relay-ip=$(detect-external-ip)'

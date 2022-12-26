@@ -1,0 +1,47 @@
+version: "3"
+services:
+  redis:
+    image: redis
+    container_name: outline-redis
+    networks:
+      - proxy
+    volumes:
+        - ./redis:/data
+
+  postgres:
+    image: postgres
+    container_name: outline-postgres
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: outline
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - ./pgdate:/var/lib/postgresql/data
+    networks:
+      - proxy
+
+  s3:
+    image: minio/minio
+    container_name: outline-s3
+    volumes:
+      - ./s3:/data
+    networks:
+      - proxy
+    environment:
+      MINIO_ROOT_USER: AKIAIOSFODNN7EXAMPLE
+      MINIO_ROOT_PASSWORD: MINIO_ROOT_PASSWORD
+    command: server /data --console-address ":9001"
+
+  outline:
+    image: outlinewiki/outline
+    container_name: outline
+    env_file:
+      - outline.env
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external:
+      name: proxy

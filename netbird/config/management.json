@@ -1,0 +1,50 @@
+{
+  "Stuns": [
+    {
+      "Proto": "udp",
+      "URI": "stun:demi.io:443",
+      "Username": "",
+      "Password": null
+    }
+  ],
+  "TURNConfig": {
+    "Turns": [
+      {
+        "Proto": "udp",
+        "URI": "turn:demo.io:443",
+        "Username": "self",
+        "Password": "OzlqNFKxZIhCmVAod7sopK9DaMpJ5Xrbq6JkofSYJ9c"
+      }
+    ],
+    "CredentialsTTL": "12h",
+    "Secret": "secret",
+    "TimeBasedCredentials": false
+  },
+  "Signal": {
+    "Proto": "https",
+    "URI": "nbs.demo.io:443",
+    "Username": "",
+    "Password": null
+  },
+  "Datadir": "",
+  "HttpConfig": {
+    "Address": "0.0.0.0:33073",
+    "AuthIssuer": "https://demo.io-auth0-domain/",
+    "AuthAudience": "NetBird",
+    "AuthKeysLocation": "https://demo.io-auth0-domain/.well-known/jwks.json",
+    "OIDCConfigEndpoint": "https://demo.io-auth0-domain/.well-known/openid-configuration"
+  },
+  "IdpManagerConfig": {
+    "ManagerType": "none"
+  },
+  "DeviceAuthorizationFlow": {
+    "Provider": "hosted",
+    "ProviderConfig": {
+      "Audience": "NetBird",
+      "Domain": "",
+      "ClientID": "demo.io-client-id",
+      "TokenEndpoint": "https://demo.io-auth0-domain/oauth/token",
+      "DeviceAuthEndpoint": "https://demo.io-auth0-domain/oauth/device/code"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+# http://oauth-hydra:4445/admin/clients
+
+{
+  "client_name": "todos",
+  "client_secret": "3fbb40d5-93a8-4246-b392-51a6d55b8796",
+  "redirect_uris": [
+    "https://oauth-todos.example/oauth2/redirect"
+  ],
+  "grant_types": [
+    "authorization_code",
+    "refresh_token",
+    "code"
+  ],
+  "response_types": [
+    "code",
+    "id_token",
+    "token"
+  ],
+  "token_endpoint_auth_method": "client_secret_post",
+  "scope": "openid offline email profile"
+}

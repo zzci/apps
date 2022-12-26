@@ -1,0 +1,43 @@
+http:
+  routers:
+    uptrace:
+      rule: 'Host(`ad.log.demo.io`)'
+      service: 'uptrace'
+      priority: 1
+      entryPoints:
+        - 'https'
+      tls:
+        certResolver: default
+      middlewares:
+        - 'ip-list'
+    uptrace-direct:
+      entryPoints:
+        - 'https'
+      rule: 'Host(`log.demo.io`) && (PathPrefix(`/api/v1/vector/logs`) || PathPrefix(`/api/v2/spans`))'
+      service: 'uptrace'
+      tls: true
+    uptrace-http:
+      entryPoints:
+        - 'https'
+      rule: 'Host(`log.demo.io`) && PathPrefix(`/v1/traces`)'
+      service: 'uptrace-http'
+      tls: true
+    uptrace-grpc:
+      entryPoints:
+        - 'https'
+      rule: 'Host(`log-grpc.demo.io`)'
+      service: 'uptrace-grpc'
+      tls: true
+  services:
+    uptrace:
+      loadBalancer:
+        servers:
+          - url: 'http://uptrace:14318'
+    uptrace-http:
+      loadBalancer:
+        servers:
+          - url: 'http://uptrace-otel:4318'
+    uptrace-grpc:
+      loadBalancer:
+        servers:
+          - url: 'h2c://uptrace-otel:4317'

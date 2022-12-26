@@ -1,0 +1,60 @@
+version: '3'
+
+services:
+  promscale-db:
+    image: timescale/timescaledb-ha:pg14-latest
+    container_name: promscale-db
+    ports:
+      - 5432:5432/tcp
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: postgres
+      TSTUNE_PROFILE: promscale
+    networks:
+      - promscale
+    volumes:
+      - ./data/pgdata:/home/postgres/pgdata/:rw
+
+  promscale:
+    image: timescale/promscale:latest
+    networks:
+      - promscale
+    container_name: promscale
+    restart: on-failure
+    depends_on:
+      - promscale-db
+    environment:
+      PROMSCALE_DB_URI: postgres://postgres:password@promscale-db:5432/postgres?sslmode=allow
+      PROMSCALE_TRACING_OTLP_SERVER_ADDRESS: ':9202'
+
+  promscale-query:
+    depends_on:
+      - promscale
+    restart: on-failure
+    image: jaegertracing/jaeger-query:1.40
+    container_name: promscale-query
+    environment:
+      SPAN_STORAGE_TYPE: grpc-plugin
+      GRPC_STORAGE_SERVER: promscale:9202
+    networks:
+      - promscale
+      - proxy
+
+  promscale-otel:
+    container_name: promscale-otel
+    image: otel/opentelemetry-collector-contrib:0.66.0
+    restart: on-failure
+    command:
+      - '--config=/etc/otelcol/config.yaml'
+    volumes:
+      - ./config/otel.yml:/etc/otelcol/config.yaml
+    networks:
+      - promscale
+      - proxy
+
+networks:
+  promscale:
+    name: promscale
+  proxy:
+    external: true
+    name: proxy

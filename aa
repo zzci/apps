@@ -1,0 +1,27 @@
+#!/bin/bash
+
+[ "$1" = "pack" ] && {
+    for app in $(ls ./); do
+        if [ -d $app ]; then
+            echo "Pack $app to $app.tar.gz"
+            tar -czf $app.tar.gz $app
+        fi
+    done
+    rm -rf node_modules.tar.gz
+}
+
+[ "$1" = "gen" ] && {
+    html='<h1>Apps</h1><p>'
+    for app in $(ls *.tar.gz); do
+        html+="<a href='$app'>$app</a><br>"
+    done
+    html+="</p>"
+
+    echo $html > index.html
+}
+
+[ "$1" = "clean" ] && {
+    rm -rf *.tar.gz index.html
+}
+
+exit 0

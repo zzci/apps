@@ -1,0 +1,38 @@
+http:
+  routers:
+    netbird-dashboard:
+      entryPoints:
+        - 'https'
+      rule: 'Host(`nb.demo.io`)'
+      service: 'netbird-dashboard'
+      tls:
+        certResolver: default
+    netbird-management:
+      entryPoints:
+        - 'https'
+      rule: 'Host(`nbm.demo.io`)'
+      middlewares:
+        - cors
+      service: 'netbird-management'
+      tls:
+        certResolver: default
+    netbird-signal:
+      entryPoints:
+        - 'https'
+      rule: 'Host(`nbs.demo.io`)'
+      service: 'netbird-signal'
+      tls:
+        certResolver: default
+  services:
+    netbird-dashboard:
+      loadBalancer:
+        servers:
+          - url: 'http://netbird-dashboard'
+    netbird-management:
+      loadBalancer:
+        servers:
+          - url: 'h2c://netbird-mgmt:33073'
+    netbird-signal:
+      loadBalancer:
+        servers:
+          - url: 'h2c://netbird-signal:80'

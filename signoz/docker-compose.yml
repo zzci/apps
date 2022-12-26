@@ -1,0 +1,88 @@
+version: "3"
+
+services:
+  signoz-clickhouse:
+    container_name: signoz-clickhouse
+    image: clickhouse/clickhouse-server:22.9-alpine
+    restart: on-failure
+    environment:
+      CLICKHOUSE_DB: signoz
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "localhost:8123/ping"]
+      interval: 1s
+      timeout: 1s
+      retries: 30
+    volumes:
+      - ./data/clickhouse:/var/lib/clickhouse
+    networks:
+      - signoz
+
+  signoz-alertmanager:
+    container_name: signoz-alertmanager
+    image: signoz/alertmanager:0.23.0-0.2
+    volumes:
+      - ./data/alertmanager:/data
+    restart: on-failure
+    command:
+      - --queryService.url=http://signoz-query:8085
+      - --storage.path=/data
+    networks:
+      - signoz
+
+  signoz-query:
+    image: signoz/query-service:0.11.4
+    container_name: signoz-query
+    command: ["-config=/root/config/prometheus.yml"]
+    volumes:
+      - ./config/prometheus.yml:/root/config/prometheus.yml
+      - ./data/dashboards:/root/config/dashboards
+      - ./data/signoz/:/var/lib/signoz/
+    environment:
+      - ClickHouseUrl=tcp://signoz-clickhouse:9000/?database=signoz_traces
+      - ALERTMANAGER_API_PREFIX=http://signoz-alertmanager:9093/api/
+      - SIGNOZ_LOCAL_DB_PATH=/var/lib/signoz/signoz.db
+      - DASHBOARDS_PATH=/root/config/dashboards
+      - STORAGE=clickhouse
+      - GODEBUG=netdns=go
+      - TELEMETRY_ENABLED=true
+      - DEPLOYMENT_TYPE=docker-standalone-amd
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "localhost:8080/api/v1/version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on:
+      signoz-clickhouse:
+        condition: service_healthy
+    networks:
+      - signoz
+
+  signoz-frontend:
+    image: signoz/frontend:0.11.4
+    container_name: signoz-frontend
+    restart: on-failure
+    volumes:
+      - ./config/nginx-config.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - signoz
+      - proxy
+
+  signoz-otel:
+    container_name: signoz-otel
+    image: signoz/signoz-otel-collector:0.63.0
+    restart: on-failure
+    command:
+      - "--config=/etc/otelcol/config.yaml"
+    volumes:
+      - ./config/otel-collector-config.yaml:/etc/otelcol/config.yaml
+    networks:
+      - signoz
+      - proxy
+
+networks:
+  signoz:
+    name: signoz
+  proxy:
+    external: true
+    name: proxy

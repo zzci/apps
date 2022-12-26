@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+  relay:
+    image: walletconnect/relay:master
+    container_name: wc-relay
+    restart: always
+    networks:
+      - proxy
+    environment:
+      - REDIS_URL=redis://wc-redis:6379/0
+      - LOG_LEVEL=TRACE
+    depends_on:
+      redis:
+        condition: service_healthy
+  redis:
+    image: redis:6-alpine
+    container_name: wc-redis
+    networks:
+      - proxy
+    volumes:
+      - ./redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+networks:
+  proxy:
+    external: true
+    name: proxy

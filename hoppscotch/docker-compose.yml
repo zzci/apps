@@ -1,0 +1,14 @@
+version: "3.7"
+
+services:
+  curl:
+    image: hoppscotch/hoppscotch:latest
+    container_name: curl
+    restart: always
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proxy

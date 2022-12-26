@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  station:
+    container_name: ${POD_NAME}
+    hostname: ${POD_HOSTNAME}
+    image: ${POD_IMAGE}
+    restart: always
+    mem_limit: ${POD_MEM}
+    cpus: ${POD_CPU}
+    volumes:
+      - ${POD_DATA_WORK}:/work
+      - ${POD_DATA_ROOT}:/root
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /app:/app
+    networks:
+      - traefik
+    labels:
+      traefik.enable: true
+      traefik.docker.network: ${TRAEFIK_NETWORK}
+      # vscode
+      traefik.http.routers.station-vscode.middlewares: "basicAuth"
+      traefik.http.routers.station-vscode.entrypoints: ${TRAEFIK_ENTRYPOINT}
+      traefik.http.routers.station-vscode.tls.certResolver: "default"
+      traefik.http.routers.station-vscode.rule: "Host(`${VSCODE_URL}`)"
+      traefik.http.services.station-vscode.loadbalancer.server.port: "8080"
+      traefik.http.routers.station-vscode.service: "station-vscode"
+      # jupyter
+      traefik.http.routers.station-jupyter.middlewares: "basicAuth"
+      traefik.http.routers.station-jupyter.entrypoints: ${TRAEFIK_ENTRYPOINT}
+      traefik.http.routers.station-jupyter.tls.certResolver: default
+      traefik.http.routers.station-jupyter.rule: "Host(`${JUPYTER_URL}`)"
+      traefik.http.routers.station-jupyter.service: "station-jupyter"
+      traefik.http.services.station-jupyter.loadbalancer.server.port: "8888"
+
+networks:
+  traefik:
+    external: true
+    name: ${TRAEFIK_NETWORK}

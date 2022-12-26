@@ -1,0 +1,49 @@
+version: '3'
+services:
+  #UI dashboard
+  dashboard:
+    image: wiretrustee/dashboard:main
+    container_name: netbird-dashboard
+    restart: unless-stopped
+    environment:
+      - AUTH_AUDIENCE=NetBird
+      - AUTH_CLIENT_ID=demo.io-client-id
+      - AUTH_AUTHORITY=https://demo.io-auth0-domain/
+      - USE_AUTH0=true
+      - AUTH_SUPPORTED_SCOPES=openid profile email offline_access api email_verified
+      - NETBIRD_MGMT_API_ENDPOINT=https://nbm.demo.io
+      - NETBIRD_MGMT_GRPC_API_ENDPOINT=https://nbm.demo.io
+      - AUTH_REDIRECT_URI=
+      - AUTH_SILENT_REDIRECT_URI=
+    networks:
+      - proxy
+  signal:
+    image: netbirdio/signal:latest
+    container_name: netbird-signal
+    restart: unless-stopped
+    command:
+      - 'run'
+      - '--log-file=console'
+      - '--log-level=debug'
+    networks:
+      - proxy
+    volumes:
+      - ./data/netbird-signal:/var/lib/netbird
+  management:
+    image: netbirdio/management:latest
+    container_name: netbird-mgmt
+    restart: unless-stopped
+    depends_on:
+      - dashboard
+    user: root
+    networks:
+      - proxy
+    volumes:
+      - ./data/netbird-mgmt:/var/lib/netbird
+      - ./config/management.json:/etc/netbird/management.json
+    command: ['--port', '33073', '--log-file', 'console', '--disable-anonymous-metrics=true']
+
+networks:
+  proxy:
+    external: true
+    name: proxy

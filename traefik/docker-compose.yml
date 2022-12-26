@@ -1,0 +1,78 @@
+version: '3'
+
+services:
+  traefik:
+    container_name: ${POD_NAME}
+    hostname: ${POD_HOSTNAME}
+    image: ${POD_IMAGE}
+    restart: always
+    # ports:
+    #   - 0.0.0.0:80:80
+    #   - 0.0.0.0:443:443/tcp
+    networks:
+      - traefik
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./ssl:/ssl
+      - ./services:/services
+      - ./log:/log
+    environment:
+      ACME_DNS_API_BASE: 'https://acme.demo.io'
+      ACME_DNS_STORAGE_PATH: '/ssl/acme-dns.json'
+    command:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --api.dashboard
+      ## log
+      - --log=true
+      - --log.level=error
+      - --log.filepath=/log/proxy.log
+      - --accesslog=false
+      - --accesslog.filepath=/log/access.log
+      ## endpoints
+      - --entrypoints.http.address=:80
+      - --entrypoints.https.address=:443
+      - --entrypoints.http.http.redirections.entrypoint.scheme=https
+      - --entrypoints.http.http.redirections.entrypoint.to=https
+      ## plugins
+      - --experimental.localPlugins.traefik-auth.modulename=github.com/zzci/traefik-auth
+      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/zzci/traefik-real-ip
+      - --experimental.localPlugins.fail2ban.modulename=github.com/tomMoulard/fail2ban
+      ## certificates
+      ### acme http challenge
+      - --certificatesresolvers.default.acme.httpchallenge=true
+      - --certificatesresolvers.default.acme.httpchallenge.entrypoint=http
+      - --certificatesresolvers.default.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.default.acme.storage=/ssl/acme.json
+      ### acme dns challenge
+      - --certificatesresolvers.dns.acme.dnschallenge=true
+      - --certificatesresolvers.dns.acme.dnschallenge.provider=acme-dns
+      - --certificatesresolvers.dns.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.dns.acme.storage=/ssl/acme.json
+      ## providers
+      ### docker
+      # - --providers.docker=true
+      # - --providers.docker.exposedbydefault=false
+      ### file
+      - --providers.file.directory=/services
+      - --providers.file.watch=true
+      ### http
+      - --providers.http.endpoint=https://demo.io/config
+      - --providers.http.pollInterval=10s
+      - --providers.http.pollTimeout=60s
+      - --providers.http.tls.cert=/ssl/client.crt
+      - --providers.http.tls.key=/ssl/client.key
+
+    labels:
+      traefik.enable: true
+      traefik.http.middlewares.ip-list.ipwhitelist.sourcerange: '${TRAEFIK_IPLIST}'
+      traefik.http.routers.dashboard.middlewares: 'ip-list'
+      traefik.http.routers.dashboard.entrypoints: 'https'
+      traefik.http.routers.dashboard.tls: true
+      # traefik.http.routers.dashboard.tls.certResolver: default
+      traefik.http.routers.dashboard.rule: 'Host(`${TRAEFIK_DASHBOARD}`)'
+      traefik.http.routers.dashboard.service: 'api@internal'
+
+networks:
+  traefik:
+    name: ${TRAEFIK_NETWORK}

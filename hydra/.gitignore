@@ -1,0 +1,7 @@
+node_modules/
+db
+hydra.yml
+.env
+package-lock.json
+yarn.lock
+go.sum

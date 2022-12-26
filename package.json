@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "out": "yarn clean && yarn build && yarn gen",
+    "out": "npm run clean && npm run build && npm run gen",
     "build": "./aa pack",
     "gen": "./aa gen",
     "clean": "./aa clean"

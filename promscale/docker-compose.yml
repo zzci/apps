@@ -16,7 +16,7 @@ services:
       - ./data/pgdata:/home/postgres/pgdata/:rw
 
   promscale:
-    image: timescale/promscale:latest
+    image: timescale/promscale:0.17
     networks:
       - promscale
     container_name: promscale
@@ -31,7 +31,7 @@ services:
     depends_on:
       - promscale
     restart: on-failure
-    image: jaegertracing/jaeger-query:1.40
+    image: jaegertracing/jaeger-query:1.41
     container_name: promscale-query
     environment:
       SPAN_STORAGE_TYPE: grpc-plugin
@@ -42,7 +42,7 @@ services:
 
   promscale-otel:
     container_name: promscale-otel
-    image: otel/opentelemetry-collector-contrib:0.66.0
+    image: otel/opentelemetry-collector:0.69.0
     restart: on-failure
     command:
       - '--config=/etc/otelcol/config.yaml'

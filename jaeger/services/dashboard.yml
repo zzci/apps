@@ -1,0 +1,7 @@
+http:
+  routers:
+    dashboard:
+      service: 'api@internal'
+      entryPoints:
+        - 'dashboard'
+      rule: 'HostRegexp(`{host:.+}`)'

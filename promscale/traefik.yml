@@ -1,0 +1,30 @@
+http:
+  routers:
+    promscale-query:
+      rule: 'Host(`otel.demo.io`)'
+      service: promscale-query
+      entryPoints:
+        - 'http'
+    promscale-http:
+      rule: 'Host(`otel-http.demo.io`)'
+      service: promscale-http
+      entryPoints:
+        - 'http'
+    promscale-grpc:
+      rule: 'Host(`otel-grpc.demo.io`)'
+      service: promscale-grpc
+      entryPoints:
+        - 'http'
+  services:
+    promscale-query:
+      loadBalancer:
+        servers:
+          - url: 'http://promscale-query:16686'
+    promscale-http:
+      loadBalancer:
+        servers:
+          - url: 'http://promscale-otel:4318'
+    promscale-grpc:
+      loadBalancer:
+        servers:
+          - url: 'h2c://promscale-otel:4317'

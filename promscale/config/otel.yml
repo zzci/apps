@@ -1,10 +1,34 @@
+extensions:
+  health_check:
+
 receivers:
   otlp:
     protocols:
       grpc:
       http:
+  hostmetrics:
+    collection_interval: 5s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      load:
+      memory:
+      network:
+      # process:
+      # processes:
+      paging:
+
+processors:
+  resourcedetection:
+    detectors: ['system']
+  batch:
+    send_batch_size: 10000
+    timeout: 10s
 
 exporters:
+  logging:
+    loglevel: debug
   otlp:
     endpoint: 'promscale:9202'
     tls:
@@ -19,12 +43,6 @@ exporters:
     tls:
       insecure: true
 
-processors:
-  batch:
-    send_batch_size: 4000
-    send_batch_max_size: 4000
-    timeout: 10s
-
 service:
   pipelines:
     traces:
@@ -35,3 +53,12 @@ service:
       receivers: [otlp]
       processors: [batch]
       exporters: [prometheusremotewrite]
+    metrics/hostmetrics:
+      receivers: [hostmetrics]
+      processors: [batch, resourcedetection]
+      exporters: [prometheusremotewrite]
+    logs:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp, logging]
+  extensions: [health_check]

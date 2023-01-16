@@ -29,7 +29,7 @@ done
         mkdir -p $POD_DATA/.init/
 
         echo -e "#!/bin/sh\n" > $POD_DATA/.init/init.sh
-        echo "sctl enable coder" >> $POD_DATA/.init/init.sh
+        echo "sctl enable code" >> $POD_DATA/.init/init.sh
         echo "sctl enable jupyter" >> $POD_DATA/.init/init.sh
         echo "sctl enable sshd" >> $POD_DATA/.init/init.sh
     fi

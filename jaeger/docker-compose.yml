@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.41
+    container_name: jaeger
+    restart: on-failure
+    environment:
+      COLLECTOR_OTLP_ENABLED: true
+    labels:
+      traefik.enable: false
+      traefik.http.routers.jaeger-http.middlewares: 'cros-header'
+      traefik.http.routers.jaeger-http.entrypoints: 'http'
+      traefik.http.services.jaeger-http.loadbalancer.server.port: 4318
+      traefik.http.routers.jaeger-grpc.entrypoints: 'grpc'
+      traefik.http.services.jaeger-grpc.loadbalancer.server.port: 4317
+      traefik.http.routers.jaeger-query.entrypoints: 'query'
+      traefik.http.services.jaeger-query.loadbalancer.server.port: 16686
+
+  jaeger-traefik:
+    image: traefik:v2.9.6
+    container_name: jaeger-traefik
+    restart: on-failure
+    ports:
+      - 16686:16686
+      - 4317:4317
+      - 4318:4318
+      - 8081:8081
+    volumes:
+      - ./services:/services
+    command:
+      - --global.checknewversion=false
+      - --global.sendanonymoususage=false
+      - --api.dashboard
+      - --log=true
+      - --log.level=debug
+      - --log.filepath=/log/proxy.log
+      - --accesslog=false
+      - --accesslog.filepath=/log/access.log
+      - --entrypoints.dashboard.address=:8081
+      - --entrypoints.query.address=:16686
+      - --entrypoints.grpc.address=:4317
+      - --entrypoints.http.address=:4318
+      - --providers.file.directory=/services
+      - --providers.file.watch=true

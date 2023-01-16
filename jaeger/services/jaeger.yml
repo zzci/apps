@@ -1,0 +1,48 @@
+http:
+  middlewares:
+    cros_header:
+      headers:
+        accessControlAllowMethods:
+          - GET
+          - OPTIONS
+          - POST
+        accessControlAllowOriginList:
+          - 'http://localhost:3000'
+          - http://localhost:3001
+        accessControlMaxAge: 86400
+        accessControlAllowCredentials: true
+        accessControlAllowHeaders:
+          - content-type
+
+  routers:
+    jaeger_query:
+      rule: 'HostRegexp(`{host:.+}`)'
+      service: jaeger_query
+      entryPoints:
+        - 'query'
+    jaeger_http:
+      rule: 'HostRegexp(`{host:.+}`)'
+      service: jaeger_http
+      entryPoints:
+        - 'http'
+      middlewares:
+        - cros_header
+    jaeger_grpc:
+      rule: 'HostRegexp(`{host:.+}`)'
+      service: jaeger_grpc
+      entryPoints:
+        - 'grpc'
+
+  services:
+    jaeger_query:
+      loadBalancer:
+        servers:
+          - url: 'http://jaeger:16686'
+    jaeger_http:
+      loadBalancer:
+        servers:
+          - url: 'http://jaeger:4318'
+    jaeger_grpc:
+      loadBalancer:
+        servers:
+          - url: 'h2c://jaeger:4317'

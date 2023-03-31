@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  proxy:
+    image: zzci/proxy
+    container_name: proxy
+    hostname: 'proxy'
+    volumes:
+      - ./work:/work
+    cap_add:
+      - NET_ADMIN
+    ports:
+      - '4433:4433'
+      - '4434:4434'
+      - '4433:4433/udp'
+      - '4434:4434/udp'

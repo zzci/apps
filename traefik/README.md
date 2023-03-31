@@ -1,32 +1,47 @@
-# traefik
+# Production-ready Traefik Configuration Guide with Examples
 
-## Run.
+## Getting Started
+
+1. Clone the repository and run
 
 ```
 git clone https://github.com/zzci/traefik.git
-
 cd traefik
+```
 
+2. Copy the .env.example file to .env
+
+```
+cp .env.example .env
+```
+
+3. Edit the .env file as per your requirements
+
+4. Start Traefik with the following command
+
+```
 ./aa run
 ```
 
-## Example config acmedns with domain `test.io`
+Please note that you'll need to configure the .env file according to your needs before starting Traefik.
 
-* Add traefik config.
+## Example configuration for using acme-dns with domain `test.io`
+
+1. Add Traefik config for test.io
+
 ```
 cp -a base.yml services/base.yml
-
 sed -i 's/demo.io/test.io/' services/base.yml
 ```
 
-* Register https://github.com/joohoi/acme-dns
+2. Register with acme-dns by sending a POST request to https://auth.acme-dns.io/register
 
 ```
 curl -X POST \
   'https://auth.acme-dns.io/register'
 ```
 
-* Get acme-dns config.
+3. Retrieve the acme-dns config
 
 ```json
 {
@@ -38,10 +53,9 @@ curl -X POST \
 }
 ```
 
-* Set acme-dns config.
+4. Save the acme-dns config in ssl/acme-dns.json for test.io
 
-```
-cat ssl/acme-dns.json
+```json
 {
   "test.io": {
     "username": "42eb90bd-1b63-4106-8523-1421ea1b1784",
@@ -53,7 +67,7 @@ cat ssl/acme-dns.json
 }
 ```
 
-* Set record
+5. Set the DNS record for `_acme-challenge.test.io` to point to `5281873a-74d5-4f01-a6c3-92c58dd741e9.auth.acme-dns.io` (CNAME)
 
 ```
 _acme-challenge.test.io CNAME 5281873a-74d5-4f01-a6c3-92c58dd741e9.auth.acme-dns.io

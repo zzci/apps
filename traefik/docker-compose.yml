@@ -17,6 +17,7 @@ services:
       - ./services:/services
       - ./log:/log
     environment:
+      LEGO_DISABLE_CNAME_SUPPORT: ${ACME_DISABLE_CNAME:-true}
       ACME_DNS_API_BASE: ${ACME_DNS_API}
       ACME_DNS_STORAGE_PATH: '/ssl/acme-dns.json'
     command:
@@ -47,6 +48,7 @@ services:
       ### acme dns challenge
       - --certificatesresolvers.dns.acme.dnschallenge=true
       - --certificatesresolvers.dns.acme.dnschallenge.provider=acme-dns
+      - --certificatesresolvers.dns.acme.dnschallenge.resolvers=${ACME_DNS_RESOLVERS:-1.1.1.1:53,8.8.8.8:53}
       - --certificatesresolvers.dns.acme.email=${ACME_EMAIL}
       - --certificatesresolvers.dns.acme.storage=/ssl/acme.json
       ## providers

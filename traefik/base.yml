@@ -1,0 +1,26 @@
+http:
+  middlewares:
+    ipauth:
+      ipWhiteList:
+        sourceRange:
+          - '127.0.0.1'
+    pwdauth:
+      basicAuth:
+        removeHeader: true
+        users:
+          # admin:admin created with htpasswd -nbB admin admin
+          - 'admin:$2y$05$hl9BnvNyK3JyukJGtiuLDuRWtKoPhS1vZdw7kDXwwb482zPlgfBbq'
+  routers:
+    default:
+      rule: 'Host(`acme.demo.io`)'
+      service: 'api@internal'
+      middlewares:
+        - 'pwdauth'
+      entryPoints:
+        - 'https'
+      tls:
+        certResolver: dns
+        domains:
+          - main: 'demo.io'
+            sans:
+              - '*.demo.io'

@@ -6,9 +6,9 @@ services:
     hostname: ${POD_HOSTNAME}
     image: ${POD_IMAGE}
     restart: always
-    # ports:
-    #   - 0.0.0.0:80:80
-    #   - 0.0.0.0:443:443/tcp
+    ports:
+      - 0.0.0.0:80:80
+      - 0.0.0.0:443:443/tcp
     networks:
       - traefik
     volumes:
@@ -17,17 +17,17 @@ services:
       - ./services:/services
       - ./log:/log
     environment:
-      ACME_DNS_API_BASE: 'https://acme.demo.io'
+      ACME_DNS_API_BASE: ${ACME_DNS_API}
       ACME_DNS_STORAGE_PATH: '/ssl/acme-dns.json'
     command:
       - --global.checknewversion=false
       - --global.sendanonymoususage=false
       - --api.dashboard
       ## log
-      - --log=true
-      - --log.level=error
+      - --log=${TRAEFIK_LOG:-true}
+      - --log.level=${TRAEFIK_LOG_LEVEL:-error}
       - --log.filepath=/log/proxy.log
-      - --accesslog=false
+      - --accesslog=${TRAEFIK_ACCESS_LOG:-false}
       - --accesslog.filepath=/log/access.log
       ## endpoints
       - --entrypoints.http.address=:80
@@ -51,17 +51,17 @@ services:
       - --certificatesresolvers.dns.acme.storage=/ssl/acme.json
       ## providers
       ### docker
-      # - --providers.docker=true
-      # - --providers.docker.exposedbydefault=false
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
       ### file
       - --providers.file.directory=/services
       - --providers.file.watch=true
       ### http
-      - --providers.http.endpoint=https://demo.io/config
-      - --providers.http.pollInterval=10s
-      - --providers.http.pollTimeout=60s
-      - --providers.http.tls.cert=/ssl/client.crt
-      - --providers.http.tls.key=/ssl/client.key
+      # - --providers.http.endpoint=https://demo.io/config
+      # - --providers.http.pollInterval=10s
+      # - --providers.http.pollTimeout=60s
+      # - --providers.http.tls.cert=/ssl/client.crt
+      # - --providers.http.tls.key=/ssl/client.key
 
     labels:
       traefik.enable: true

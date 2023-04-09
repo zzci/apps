@@ -9,17 +9,17 @@ git clone https://github.com/zzci/traefik.git
 cd traefik
 ```
 
-2. Copy the .env.example file to .env
+2. Copy the env.example file to .env
 
 ```
-cp .env.example .env
+cp env.example .env
 ```
 
 3. Edit the .env file as per your requirements
 
 4. Start Traefik with the following command
 
-```
+```shell
 ./aa run
 ```
 
@@ -29,14 +29,15 @@ Please note that you'll need to configure the .env file according to your needs 
 
 1. Add Traefik config for test.io
 
-```
+```shell
+mkdir -p services
 cp -a base.yml services/base.yml
 sed -i 's/demo.io/test.io/' services/base.yml
 ```
 
 2. Register with acme-dns by sending a POST request to https://auth.acme-dns.io/register
 
-```
+```shell
 curl -X POST \
   'https://auth.acme-dns.io/register'
 ```
@@ -69,6 +70,6 @@ curl -X POST \
 
 5. Set the DNS record for `_acme-challenge.test.io` to point to `5281873a-74d5-4f01-a6c3-92c58dd741e9.auth.acme-dns.io` (CNAME)
 
-```
+```plain
 _acme-challenge.test.io CNAME 5281873a-74d5-4f01-a6c3-92c58dd741e9.auth.acme-dns.io
 ```

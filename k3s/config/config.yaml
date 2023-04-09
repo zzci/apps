@@ -1,0 +1,21 @@
+debug: false
+log: "/app/k3s/logs/k3s.log"
+tls-san:
+  - "k8s.dev.local"
+node-name: "master.k8s.dev.local"
+node-label:
+  - "dev=test-node-label-dev"
+cluster-init: true
+token: "token-server"
+agent-token: "token-client"
+flannel-backend: "none"
+disable-network-policy: true
+disable-kube-proxy: false
+disable-scheduler: false
+disable-cloud-controller: false
+disable-helm-controller: false
+disable:
+  - "metrics-server"
+  - "coredns"
+  - "servicelb"
+  - "traefik" 

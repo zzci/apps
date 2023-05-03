@@ -1,2 +1,4 @@
-#!/bin/bash
+#!/bin/sh
+
+rm -rf /etc/cni/net.d
 /usr/local/bin/k3s-uninstall.sh

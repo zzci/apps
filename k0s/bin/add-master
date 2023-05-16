@@ -125,6 +125,11 @@ fi
 info 'Installing k0s worker...'
 $install_dir/k0s install controller --token-file $config_dir/master-token -c $config_dir/config.yaml
 
+if [ ! -f $HOME/.kube/config ]; then
+  mkdir -p $HOME/.kube;
+  ln -sf /var/lib/k0s/pki/admin.conf $HOME/.kube/config
+fi
+
 # Prepare the uninstall script
 cat > $base_dir/bin/uninstall << EOF
 #!/bin/bash

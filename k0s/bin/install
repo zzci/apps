@@ -1,0 +1,145 @@
+#!/bin/bash
+set -e
+
+# Set the software versions
+k0s_version="v1.26.4+k0s.0"
+cni_version="v1.2.0"
+helm_version="v3.11.3"
+kubectl_version="v1.27.1"
+
+# Define the install config
+bin_dir="/opt/.cmd"
+base_dir="/opt/k0s"
+dist_dir="$base_dir/dist"
+config_dir="$base_dir/config"
+cert_dir="$config_dir/certs"
+install_dir="$base_dir/bin"
+cni_dir="/opt/cni/bin"
+k0s_cert_dir="/var/lib/k0s/pki"
+temp_dir=$(mktemp -d)
+kubelet_volume=/var/lib/kubelet/volume-plugins
+
+# List of files to download
+download_files=(
+  "https://github.com/k0sproject/k0s/releases/download/$k0s_version/k0s-${k0s_version}-amd64"
+  "https://github.com/containernetworking/plugins/releases/download/$cni_version/cni-plugins-linux-amd64-$cni_version.tgz"
+  "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
+  "https://dl.k8s.io/release/$kubectl_version/bin/linux/amd64/kubectl"
+)
+
+# Prepare the dirs
+dirs=($base_dir/logs $dist_dir $cert_dir $install_dir $cni_dir $k0s_cert_dir $temp_dir $kubelet_volume)
+for dir in "${dirs[@]}"; do
+  [ -d "$dir" ] || mkdir -p $dir
+done
+
+# Helper functions
+info() {
+  echo '[INFO] ' "$@"
+}
+warn() {
+  echo '[WARN] ' "$@" >&2
+}
+fatal() {
+  echo '[ERROR] ' "$@" >&2
+  exit 1
+}
+
+# Check if either wget or curl is installed
+downloader() {
+  if command -v wget >/dev/null 2>&1; then
+    echo "wget -qO"
+  elif command -v curl >/dev/null 2>&1; then
+    echo "curl -sSL -o"
+  else
+    fatal "Error: This script requires either wget or curl to be installed." >&2
+  fi
+}
+
+# Download each file to the basedir
+info 'Downloading files...'
+for file in "${download_files[@]}"; do
+  filename=$(basename "$file")
+  filepath="$dist_dir/$filename"
+
+  if [ -f "$filepath" ]; then
+    echo "$filename already exists. Skipping download."
+  else
+    echo "Downloading $filename..."
+    $(downloader) "$filepath" "$file"
+  fi
+done
+
+# Clean
+rm -rf $cni_dir/* /etc/cni/net.d/*
+
+# Prepare the helm
+info 'Installing helm...'
+if [ -f "$bin_dir/helm" ]; then
+  info "$bin_dir/helm already exists. Skipping.."
+else
+  tar -xzf $dist_dir/helm-$helm_version-linux-amd64.tar.gz -C $temp_dir
+  mv "$temp_dir/linux-amd64/helm" "$bin_dir"
+fi
+
+# Prepare the kubectl
+info 'Installing kubectl...'
+if [ -f "$bin_dir/kubectl" ]; then
+  info "$bin_dir/kubectl already exists. Skipping.."
+else
+  cp -a $dist_dir/kubectl $bin_dir
+fi
+
+# Prepare the cni
+info 'Installing cni...'
+if [ -f "$cni_dir/bin/bridge" ]; then
+  info "CNI already exists. Skipping.."
+else
+  tar -xzf $dist_dir/cni-plugins-linux-amd64-$cni_version.tgz -C $cni_dir
+fi
+
+# Prepare the k0s
+info 'Prepare k0s...'
+if [ -f "$install_dir/k0s" ]; then
+  info "$install_dir/k0s already exists. Skipping.."
+else
+  cp $dist_dir/k0s-${k0s_version}-amd64 $install_dir/k0s
+fi
+
+# Prepare the binaries
+chmod +x $cni_dir/* $install_dir/k0s $bin_dir/*
+
+#  Prepare the config
+if [ -f "$config_dir/config.yaml" ]; then
+  info "$config_dir/config.yaml already exists. Skipping.."
+else
+  $install_dir/k0s config create >$config_dir/config.yaml
+fi
+
+# Prepare the certs
+info 'Installing certs...'
+[ -f "$cert_dir/intermediate-ca.pem" ] && cp -a "$cert_dir/intermediate-ca.pem" "$k0s_cert_dir/ca.crt"
+[ -f "$cert_dir/intermediate-ca.key" ] && cp -a "$cert_dir/intermediate-ca.key" "$k0s_cert_dir/ca.key"
+
+# Install k0s
+info 'Installing k0s...'
+
+$install_dir/k0s install controller --enable-worker -c $config_dir/config.yaml
+
+if [ ! -f $HOME/.kube/config ]; then
+  mkdir -p $HOME/.kube;
+  ln -sf /var/lib/k0s/pki/admin.conf $HOME/.kube/config
+fi
+
+# Prepare the uninstall script
+cat > $base_dir/bin/uninstall << EOF
+#!/bin/bash
+$install_dir/k0s stop
+$install_dir/k0s reset --debug
+rm -rf $cni_dir/* $install_dir/k0s /etc/cni/net.d/*
+EOF
+
+chmod +x $base_dir/bin/uninstall
+
+info 'Installation complete. Please run the following commands to start:'
+info "$install_dir/k0s start"

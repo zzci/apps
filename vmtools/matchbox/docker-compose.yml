@@ -1,0 +1,13 @@
+version: '3'
+services:
+  matchbox:
+    image: quay.io/poseidon/matchbox:latest
+    ports:
+      - 0.0.0.0:808:80
+      - 0.0.0.0:801:8001
+    container_name: matchbox
+    volumes:
+      - ./matchbox:/var/lib/matchbox
+      - ./cert:/etc/matchbox
+    command: ["-address=0.0.0.0:80","-rpc-address=0.0.0.0:8001", "-log-level=debug"]
+    restart: "unless-stopped"

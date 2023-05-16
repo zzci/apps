@@ -1,0 +1,4 @@
+#cloud-config
+
+instance_id: CHANGEME
+local-hostname: CHANGEME

@@ -1,0 +1,10 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <vmname>"
+  exit 1
+fi
+
+VM_SOCK="/app/vms/$1/tty.sock"
+
+exec minicom -D unix:$VM_SOCK

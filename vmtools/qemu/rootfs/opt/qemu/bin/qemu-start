@@ -1,0 +1,75 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <vmname> <boot order>"
+  exit 1
+fi
+
+VM_NAME="$1"
+VM_BOOT="$2"
+
+if [ -z "$VM_BOOT" ]; then
+  VM_BOOT="cn"
+fi
+
+VM_DIR="/app/vms/$VM_NAME"
+VM_CPUS=8
+VM_MEMORY=8G
+MAC_BASE="52:54"
+QEMU_BIN="/usr/bin/qemu-system-x86_64"
+CLOUD_INIT_ISO="/app/images/cloud-init.iso"
+UUID_BASE="1071d390-dcaf-4793-b46f-c8b840f2ab73"
+VM_SYSTEM_DISK="$VM_DIR/system.img"
+VM_SERIAL=$(echo -n "$VM_NAME VM_SERIAL" | md5sum | awk '{print $1}' | head -c 16)
+VM_UUID=$(uuidgen --name "$VM_NAME UUID" --namespace $UUID_BASE --md5 "$VM_SERIAL")
+VM_MAC="$MAC_BASE:$(echo $VM_SERIAL | cut -c1-8 | sed -r 's/(..)/\1:/g; s/:$//')"
+VM_HOST_IFNAME="vm-$VM_NAME"
+# Create VM directory if it doesn't exist
+if [ ! -d "${VM_DIR}" ]; then
+  echo "VM directory not found: ${VM_DIR}"
+  exit 1
+fi
+
+# Check if system disk exists
+if [ ! -f "${VM_SYSTEM_DISK}" ]; then
+  echo "Error: System disk not found: ${VM_SYSTEM_DISK}"
+  echo "Please create system disk use qemu-img"
+  echo "qemu-img create -f qcow2 "${VM_SYSTEM_DISK}" 20G"
+  exit 1
+fi
+
+# Define QEMU arguments
+QEMU_ARGS="-name $VM_NAME -m $VM_MEMORY -smp $VM_CPUS -cpu host -nographic \
+ -machine q35 -enable-kvm -no-shutdown \
+ -boot order=$VM_BOOT,reboot-timeout=5000 \
+ -device virtio-rng-pci \
+ -chardev socket,id=qmp,path=$VM_DIR/qmp.sock,server=on,wait=off \
+ -mon chardev=qmp,mode=control \
+ -pidfile $VM_DIR/vm.pid \
+ -vnc unix:$VM_DIR/vnc.sock \
+ -serial unix:$VM_DIR/tty.sock,server=on,wait=off \
+ -device virtio-balloon,deflate-on-oom=on \
+ -netdev tap,id=net0,ifname=$VM_HOST_IFNAME,script=/opt/qemu/bin/qemu-ifup,downscript=/opt/qemu/bin/qemu-ifdown \
+ -device virtio-net-pci,netdev=net0,mac=$VM_MAC \
+ -monitor unix:$VM_DIR/monitor.sock,server,nowait \
+ -smbios type=1,uuid=$VM_UUID,serial=$VM_SERIAL -uuid $VM_UUID \
+ -drive if=virtio,file=$VM_SYSTEM_DISK,format=qcow2,cache=none"
+
+# if [ -f "$VM_DIR/cloud-init/release.iso" ]; then
+#   QEMU_ARGS="${QEMU_ARGS} -cdrom $VM_DIR/cloud-init/release.iso"
+# fi
+
+if [ -f "$VM_DIR/cloud-init/release.disk" ]; then
+  QEMU_ARGS="${QEMU_ARGS} -drive if=virtio,file=$VM_DIR/cloud-init/release.disk,format=raw"
+fi
+
+# Start VM
+echo "-----"
+printf "%-10s : %-15s\n" "VM NAME" $VM_NAME
+printf "%-10s : %-15s\n" "VM MAC" $VM_MAC
+printf "%-10s : %-15s\n" "VM IFNAME" $VM_HOST_IFNAME
+printf "%-10s : %-15s\n" "VM Serial" $VM_SERIAL
+printf "%-10s : %-15s\n" "VM UUID" $VM_UUID
+echo "-----"
+
+exec $QEMU_BIN $QEMU_ARGS

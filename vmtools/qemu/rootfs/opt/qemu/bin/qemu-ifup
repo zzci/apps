@@ -1,0 +1,17 @@
+#!/bin/sh
+
+switch=vmbr0
+
+if [ -n "$1" ]; then
+  if ! ip link show "$1" >/dev/null 2>&1; then
+    ip tuntap add dev $1 mode tap
+  fi
+	ip link set $1 up
+	sleep 1
+
+	brctl addif $switch $1
+	exit 0
+else
+	echo "Error: no interface specified"
+	exit 1
+fi

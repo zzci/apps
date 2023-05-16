@@ -1,0 +1,38 @@
+#!/bin/bash
+
+# Check if the VM name argument is provided
+if [ -z "$2" ]; then
+  echo "Usage: $0 <vmname> <baseimg> [disktype qcow2|raw]"
+  exit 1
+fi
+
+# Get the VM name, base image name, and disk type from the command line arguments
+vmname="$1"
+baseimg="$2"
+disktype="$3"
+
+if [ -z "$disktype" ]; then
+  disktype="qcow2"
+fi
+
+# Create the VM disk directory
+vm_dir="/app/vms/$vmname"
+mkdir -p "$vm_dir"
+
+# Define base image and VM image paths
+base_img="/app/images/$baseimg.$disktype"
+vm_img="$vm_dir/system.img"
+
+# Check if the VM image file already exists
+if [ ! -f "$vm_img" ]; then
+    # Check if the base image file exists
+    if [ ! -f "$base_img" ]; then
+        echo "Base image does not exist, creating empty image..."
+        qemu-img create -f $disktype "$vm_img" 50G
+    else
+        cp "$base_img" "$vm_img"
+        echo "Base image copied to VM image."
+    fi
+else
+    echo "VM image already exists, skipping the copy operation."
+fi

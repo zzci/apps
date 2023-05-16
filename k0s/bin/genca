@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# Set the CA name, output directory, and timestamp
+ca_name="k8s-root-ca"
+intermediate_ca_name="k8s-intermediate-ca"
+output_dir="config/certs"
+tempdir=$(mktemp -d)
+timestamp=$(date +%Y%m%d)
+
+# Set the ECDSA curve name and size
+ecdsa_curve_name="prime256v1"
+ecdsa_curve_size="256"
+
+# Set the file paths for the certificate and key
+root_ca_key="${output_dir}/root-ca.key"
+root_ca_pem="${output_dir}/root-ca.pem"
+intermediate_ca_key="${output_dir}/intermediate-ca.key"
+intermediate_ca_pem="${output_dir}/intermediate-ca.pem"
+intermediate_ca_csr="${output_dir}/intermediate-ca.csr"
+
+# Create the output directory and temp directory
+mkdir -p $output_dir $tempdir/certs
+
+touch ${tempdir}/index
+openssl rand -hex 8 > ${tempdir}/serial
+
+# Generate config file for openssl
+cat >${tempdir}/config <<EOF
+[ca]
+default_ca = ca_default
+[ca_default]
+dir = ${tempdir}
+database = ${tempdir}/index
+serial = ${tempdir}/serial
+new_certs_dir = ${tempdir}/certs
+default_md = sha256
+policy = policy_anything
+[policy_anything]
+commonName = supplied
+[req]
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[v3_ca]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always
+basicConstraints = critical, CA:true
+keyUsage = critical, digitalSignature, keyEncipherment, keyCertSign
+EOF
+
+# Check if the root CA certificate and key already exist
+if [ -f "${root_ca_key}" ] && [ -f "${root_ca_pem}" ]; then
+  echo "Root CA certificate and key already exist. Skipping generation."
+else
+  # Generate root CA key and certificate
+  openssl ecparam -genkey -name "${ecdsa_curve_name}" -out "${root_ca_key}"
+  openssl req -x509 -new -nodes -sha256 -days 7300 \
+      -subj "/CN=${ca_name}@${timestamp}" \
+      -key $root_ca_key -out $root_ca_pem \
+      -config ${tempdir}/config \
+      -extensions v3_ca
+fi
+
+# Check if the intermediate CA certificate and key already exist
+if [ -f "${intermediate_ca_key}" ] && [ -f "${intermediate_ca_pem}" ]; then
+  echo "Intermediate CA certificate and key already exist. Skipping generation."
+else
+  # Generate intermediate CA key, CSR and certificate
+  openssl ecparam -genkey -name "${ecdsa_curve_name}" -out "${intermediate_ca_key}"
+  openssl req -new -nodes \
+      -subj "/CN=${intermediate_ca_name}@${timestamp}" \
+      -key ${intermediate_ca_key}  \
+      -out "${intermediate_ca_csr}"
+  openssl ca -batch -notext -days 3700 \
+      -in ${intermediate_ca_csr} \
+      -out ${intermediate_ca_pem} \
+      -keyfile ${root_ca_key} \
+      -cert ${root_ca_pem} \
+      -config ${tempdir}/config \
+      -extensions v3_ca
+fi
+
+rm -rf $tempdir $output_dir/*.csr

@@ -1,0 +1,20 @@
+#cloud-config
+
+# disable package update on first boot
+package_update: False
+
+# disable package upgrade on first boot
+package_upgrade: False
+
+# allow password authentication for ssh
+ssh_pwauth: True
+
+# set default user: a password: passwd
+users:
+  - name: a
+    shell: /bin/bash
+    passwd: $6$c7qNfoQihSVUgVks$3GGFcD7AJsfKxGXPfdC8ZhY4x0xwV1KyP.QNvJmAQifErRLVISVIjHgJqCHg8vrSkqdZWT2kIlIGqHyGl7YlL1
+    ssh_authorized_keys:
+      - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJFbx7KvJtTrtyoivQRM9S8Mcwx16cjtntdiSernaPCm root@cvm-test
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    lock_passwd: False

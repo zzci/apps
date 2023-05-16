@@ -1,0 +1,71 @@
+#!/bin/sh
+
+if [ -z "$1" ]; then
+  echo "Usage: $0 <vmname>"
+  exit 1
+fi
+
+VM_NAME="$1"
+
+VM_DIR="/app/vms/$VM_NAME/cloud-init"
+
+# Check if the release ISO already exists
+# if [ -f "$VM_DIR/release.iso" ]; then
+#     echo "Release ISO file already exists. Skipping creation."
+#     exit 0
+# fi
+
+# Check if the release ISO already exists
+if [ -f "$VM_DIR/release.disk" ]; then
+    echo "Release DISK file already exists. Skipping creation."
+    exit 0
+fi
+
+mkdir -p "$VM_DIR"
+
+# Check that the user-data, meta-data, and network-config files exist
+if [[ ! -f $VM_DIR/user-data || ! -f $VM_DIR/meta-data || ! -f $VM_DIR/network-config ]]; then
+    cp -a /opt/qemu/share/cloud-init/* $VM_DIR
+fi
+
+# Replace the hostname in the user-data file
+sed -i "s/: CHANGEME/: $VM_NAME/g" $VM_DIR/meta-data
+
+# Validate the cloud-init configuration files using the cloud-init command
+cloud-init schema --config-file $VM_DIR/user-data
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Failed to validate the user-data configuration."
+    exit 1
+fi
+
+cloud-init schema --config-file $VM_DIR/meta-data
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Failed to validate the meta-data configuration."
+    exit 1
+fi
+
+cloud-init schema --config-file $VM_DIR/network-config
+if [[ $? -ne 0 ]]; then
+    echo "ERROR: Failed to validate the network-config configuration."
+    exit 1
+fi
+
+# Build the cloud-init ISO image using genisoimage
+# genisoimage \
+#    -output $VM_DIR/release.iso \
+#    -input-charset utf-8 \
+#    -volid cidata \
+#    -joliet \
+#    -rock \
+#    $VM_DIR/user-data $VM_DIR/meta-data $VM_DIR/network-config
+
+mkisofs -o $VM_DIR/release.disk -V cidata -J -r $VM_DIR/user-data $VM_DIR/meta-data $VM_DIR/network-config
+
+# Check if the ISO image was created successfully
+if [ ! -f $VM_DIR/release.disk ]; then
+    echo "ERROR: Failed to create the cloud-init image."
+    exit 1
+fi
+
+echo "The cloud-init image was created to $VM_DIR"
+exit 0

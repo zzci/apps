@@ -1,0 +1,51 @@
+version: '3'
+
+services:
+  nodea:
+    container_name: vmnodea
+    hostname: nodea
+    build: .
+    restart: always
+    network_mode: host
+    volumes:
+      - ./images:/app/images:ro
+      - ./vmlist:/app/vms
+    command: >
+      sh -c '
+      qemu-init-images nodea u2004;
+      qemu-cloud-init-gen nodea;
+      qemu-start nodea
+      '
+    privileged: true
+  nodeb:
+    container_name: vmnodeb
+    hostname: nodeb
+    build: .
+    restart: always
+    network_mode: host
+    volumes:
+      - ./images:/app/images:ro
+      - ./vmlist:/app/vms
+    command: >
+      sh -c '
+      qemu-init-images nodeb u2004;
+      qemu-cloud-init-gen nodeb;
+      qemu-start nodeb
+      '
+    privileged: true
+  nodec:
+    container_name: vmnodec
+    hostname: nodec
+    build: .
+    restart: always
+    network_mode: host
+    volumes:
+      - ./images:/app/images:ro
+      - ./vmlist:/app/vms
+    command: >
+      sh -c '
+      qemu-init-images nodec u2004;
+      qemu-cloud-init-gen nodec;
+      qemu-start nodec
+      '
+    privileged: true

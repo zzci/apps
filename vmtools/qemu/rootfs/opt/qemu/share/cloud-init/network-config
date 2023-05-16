@@ -1,0 +1,21 @@
+#cloud-config
+
+version: 2
+ethernets:
+  dhcp-for-all:
+    dhcp4: true
+    dhcp6: false
+    dhcp4-overrides:
+      use-hostname: true
+      use-domains: true
+    match:
+      name: e*
+  test:
+    dhcp6: false
+    match:
+      macaddress: 0e:ba:ae:a5:f5:83
+    addresses:
+      - 10.1.1.5/24
+    gateway4: 10.1.1.1
+    nameservers:
+      addresses: [1.1.1.1, 8.8.8.8]

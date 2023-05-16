@@ -28,7 +28,7 @@ download_files=(
 )
 
 # Prepare the dirs
-dirs=($base_dir/logs $dist_dir $cert_dir $install_dir $cni_dir $k0s_cert_dir $temp_dir $kubelet_volume)
+dirs=($base_dir/logs $dist_dir $bin_dir $cert_dir $install_dir $cni_dir $k0s_cert_dir $temp_dir $kubelet_volume)
 for dir in "${dirs[@]}"; do
   [ -d "$dir" ] || mkdir -p $dir
 done

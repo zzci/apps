@@ -109,27 +109,21 @@ fi
 # Prepare the binaries
 chmod +x $cni_dir/* $install_dir/k0s $bin_dir/*
 
-#  Prepare the config
-if [ -f "$config_dir/config.yaml" ]; then
-  info "$config_dir/config.yaml already exists. Skipping.."
-else
-  $install_dir/k0s config create >$config_dir/config.yaml
+# Check the token
+if [ ! -f "$config_dir/master-token" ]; then
+  info "Use the following command to generate a token for the master:"
+  info "$install_dir/k0s token create --role=controller --expiry=1h > $config_dir/master-token"
+  fatal "Missing $config_dir/master-token, unable to join the Kubernetes cluster"
 fi
 
-# Prepare the certs
-info 'Installing certs...'
-[ -f "$cert_dir/intermediate-ca.pem" ] && cp -a "$cert_dir/intermediate-ca.pem" "$k0s_cert_dir/ca.crt"
-[ -f "$cert_dir/intermediate-ca.key" ] && cp -a "$cert_dir/intermediate-ca.key" "$k0s_cert_dir/ca.key"
+#  Check the config
+if [ ! -f "$config_dir/config.yaml" ]; then
+  fatal "Missing $config_dir/config.yaml, unable to join the Kubernetes cluster"
+fi
 
 # Install k0s
-info 'Installing k0s...'
-
-$install_dir/k0s install controller --enable-worker -c $config_dir/config.yaml
-
-if [ ! -f $HOME/.kube/config ]; then
-  mkdir -p $HOME/.kube;
-  ln -sf /var/lib/k0s/pki/admin.conf $HOME/.kube/config
-fi
+info 'Installing k0s worker...'
+$install_dir/k0s install controller --token-file $config_dir/master-token -c $config_dir/config.yaml
 
 # Prepare the uninstall script
 cat > $base_dir/bin/uninstall << EOF

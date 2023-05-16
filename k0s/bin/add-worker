@@ -109,27 +109,17 @@ fi
 # Prepare the binaries
 chmod +x $cni_dir/* $install_dir/k0s $bin_dir/*
 
-#  Prepare the config
-if [ -f "$config_dir/config.yaml" ]; then
-  info "$config_dir/config.yaml already exists. Skipping.."
-else
-  $install_dir/k0s config create >$config_dir/config.yaml
+# Check the worker token
+if [ ! -f "$config_dir/worker-token" ]; then
+  info "Use the following command to generate a token for the worker:"
+  info "$install_dir/k0s token create --role=worker --expiry=10h > $config_dir/worker-token"
+  fatal "Missing $config_dir/worker-token, unable to join the Kubernetes cluster"
 fi
-
-# Prepare the certs
-info 'Installing certs...'
-[ -f "$cert_dir/intermediate-ca.pem" ] && cp -a "$cert_dir/intermediate-ca.pem" "$k0s_cert_dir/ca.crt"
-[ -f "$cert_dir/intermediate-ca.key" ] && cp -a "$cert_dir/intermediate-ca.key" "$k0s_cert_dir/ca.key"
 
 # Install k0s
-info 'Installing k0s...'
+info 'Installing k0s worker...'
 
-$install_dir/k0s install controller --enable-worker -c $config_dir/config.yaml
-
-if [ ! -f $HOME/.kube/config ]; then
-  mkdir -p $HOME/.kube;
-  ln -sf /var/lib/k0s/pki/admin.conf $HOME/.kube/config
-fi
+$install_dir/k0s install worker --profile coreos --token-file $config_dir/worker-token
 
 # Prepare the uninstall script
 cat > $base_dir/bin/uninstall << EOF

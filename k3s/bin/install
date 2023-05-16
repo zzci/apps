@@ -3,9 +3,9 @@
 set -e
 
 # Set the software versions
-k3s_version="v1.27.1+k3s1"
+k3s_version="v1.26.4+k3s1"
 cni_version="v1.2.0"
-helm_version="v3.12.0"
+helm_version="v3.11.3"
 
 # define the install config
 k3s_binary="k3s"
@@ -26,14 +26,14 @@ download_files=(
     "https://github.com/k3s-io/k3s/releases/download/$k3s_version/k3s"
     "https://github.com/k3s-io/k3s/releases/download/$k3s_version/k3s-airgap-images-amd64.tar.gz"
     "https://github.com/containernetworking/plugins/releases/download/$cni_version/cni-plugins-linux-amd64-$cni_version.tgz"
-    "https://github.com/k3s-io/k3s/raw/v1.27.1%2Bk3s1/install.sh"
-    "https://github.com/k3s-io/k3s/raw/v1.27.1%2Bk3s1/contrib/util/generate-custom-ca-certs.sh"
-    "https://github.com/k3s-io/k3s/raw/v1.27.1%2Bk3s1/contrib/util/check-config.sh"
+    "https://github.com/k3s-io/k3s/raw/v1.26.4%2Bk3s1/install.sh"
+    "https://github.com/k3s-io/k3s/raw/v1.26.4%2Bk3s1/contrib/util/generate-custom-ca-certs.sh"
+    "https://github.com/k3s-io/k3s/raw/v1.26.4%2Bk3s1/contrib/util/check-config.sh"
     "https://get.helm.sh/helm-$helm_version-linux-amd64.tar.gz"
 )
 
 # prepare the dirs
-mkdir -p $basedir/logs $distdir $k3s_images_dir $install_dir $cni_dir $k3s_cert_dir $tempdir
+mkdir -p $basedir/logs $distdir $k3s_config_dir $k3s_images_dir $install_dir $cni_dir $k3s_cert_dir $tempdir
 
 # --- helper functions ---
 info() {

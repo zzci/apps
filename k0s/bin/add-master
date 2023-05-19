@@ -28,7 +28,7 @@ download_files=(
 )
 
 # Prepare the dirs
-dirs=($base_dir/logs $dist_dir $cert_dir $install_dir $cni_dir $k0s_cert_dir $temp_dir $kubelet_volume)
+dirs=($base_dir/logs $dist_dir $bin_dir $cert_dir $install_dir $cni_dir $k0s_cert_dir $temp_dir $kubelet_volume)
 for dir in "${dirs[@]}"; do
   [ -d "$dir" ] || mkdir -p $dir
 done
@@ -122,8 +122,13 @@ if [ ! -f "$config_dir/config.yaml" ]; then
 fi
 
 # Install k0s
-info 'Installing k0s worker...'
-$install_dir/k0s install controller --token-file $config_dir/master-token -c $config_dir/config.yaml
+info 'Installing k0s...'
+$install_dir/k0s install controller --enable-worker --token-file $config_dir/master-token -c $config_dir/config.yaml
+
+if [ ! -f $HOME/.kube/config ]; then
+  mkdir -p $HOME/.kube;
+  ln -sf /var/lib/k0s/pki/admin.conf $HOME/.kube/config
+fi
 
 # Prepare the uninstall script
 cat > $base_dir/bin/uninstall << EOF

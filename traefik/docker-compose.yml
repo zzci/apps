@@ -36,8 +36,8 @@ services:
       - --entrypoints.http.http.redirections.entrypoint.scheme=https
       - --entrypoints.http.http.redirections.entrypoint.to=https
       ## plugins
-      - --experimental.localPlugins.traefik-auth.modulename=github.com/zzci/traefik-auth
-      - --experimental.localPlugins.traefik-real-ip.modulename=github.com/zzci/traefik-real-ip
+      - --experimental.localPlugins.jwt.modulename=github.com/traefik-plugins/traefik-jwt-plugin
+      - --experimental.localPlugins.real-ip.modulename=github.com/zzci/traefik-real-ip
       - --experimental.localPlugins.fail2ban.modulename=github.com/tomMoulard/fail2ban
       ## certificates
       ### acme http challenge

@@ -1,4 +1,3 @@
-version: '3'
 services:
   redis:
     image: redis:7.0.7
@@ -10,19 +9,14 @@ services:
       - ./redis:/data
 
   postgres:
-    image: timescale/timescaledb-ha:pg14-latest
+    image: postgres:16-alpine
     container_name: postgres
-    ## first time need run with root, then comment out, and run again
-    # can be fix with custom docker image add su-exec
-    # https://gist.github.com/dmrub/b311d36492f230887ab0743b3af7309b
-    ##
-    user: root
     restart: always
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ./pgdate:/home/postgres/pgdata/data:rw
+      - ./pgdata:/var/lib/postgresql/data
     networks:
       - traefik
 
@@ -42,11 +36,11 @@ services:
     networks:
       - traefik
     environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: password
     command: server /data/data --console-address ":9001"
 
 networks:
   traefik:
     external: true
-    name: ${TRAEFIK_NETWORK}
+    name: traefik

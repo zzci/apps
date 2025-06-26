@@ -1,41 +1,26 @@
-version: '3'
-
 services:
-  matrix:
-    image: matrixdotorg/dendrite-monolith:v0.10.8
-    restart: always
+  app:
+    image: matrixconduit/matrix-conduit:v0.10.5
+    restart: unless-stopped
     container_name: matrix
     volumes:
-      - ./data/matrix:/etc/dendrite
-      - ./config/dendrite.yaml:/etc/dendrite/dendrite.yaml
-      - ./data/media:/var/dendrite/media
-    networks:
-      - proxy
-    depends_on:
-      - matrix-db
-    networks:
-      - proxy
-    restart: unless-stopped
-  matrix-db:
-    hostname: postgres
-    container_name: matrix-db
-    image: postgres:15.1-alpine
-    restart: always
-    volumes:
-      - ./config/create_db.sh:/docker-entrypoint-initdb.d/20-create_db.sh
-      - ./data/postgresql:/var/lib/postgresql/data
+      - ./db:/var/lib/matrix-conduit/
     environment:
-      POSTGRES_PASSWORD: b24478d0-df2e-4f94-a185-d01f9da7af25
-      POSTGRES_USER: dendrite
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U dendrite"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
+      CONDUIT_SERVER_NAME: your.server.name # EDIT THIS
+      CONDUIT_DATABASE_PATH: /var/lib/matrix-conduit/matrix.db
+      CONDUIT_DATABASE_BACKEND: sqlite
+      CONDUIT_PORT: 6167
+      CONDUIT_MAX_REQUEST_SIZE: 20000000 # in bytes, ~20 MB
+      CONDUIT_ALLOW_REGISTRATION: 'true'
+      CONDUIT_ALLOW_FEDERATION: 'true'
+      CONDUIT_ALLOW_CHECK_FOR_UPDATES: 'true'
+      CONDUIT_TRUSTED_SERVERS: '["matrix.org"]'
+      #CONDUIT_MAX_CONCURRENT_REQUESTS: 100
+      CONDUIT_ADDRESS: 0.0.0.0
+      CONDUIT_CONFIG: '' # Ignore this
     networks:
-      - proxy
+      - traefik
 networks:
-  proxy:
+  traefik:
     external: true
-    name: proxy
-
+    name: traefik

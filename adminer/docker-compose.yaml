@@ -1,0 +1,14 @@
+services:
+  app:
+    image: adminer:latest
+    volumes:
+      - ./data:/var/www/html/data
+      - ./plugins:/var/www/html/plugins-enabled
+    container_name: adminer
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true
+    name: traefik

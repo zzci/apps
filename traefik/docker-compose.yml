@@ -1,10 +1,8 @@
-version: '3'
-
 services:
   traefik:
-    container_name: ${POD_NAME}
-    hostname: ${POD_HOSTNAME}
-    image: ${POD_IMAGE}
+    container_name: traefik
+    hostname: traefik
+    image: zzci/traefik
     restart: always
     ports:
       - 0.0.0.0:80:80
@@ -64,18 +62,6 @@ services:
       # - --providers.http.pollTimeout=60s
       # - --providers.http.tls.cert=/ssl/client.crt
       # - --providers.http.tls.key=/ssl/client.key
-
-    labels:
-      traefik.enable: true
-      traefik.http.middlewares.ip-list.ipwhitelist.sourcerange: '${TRAEFIK_IPLIST}'
-      traefik.http.routers.dashboard.middlewares: 'ip-list'
-      traefik.http.routers.dashboard.entrypoints: 'https'
-      traefik.http.routers.dashboard.tls: true
-      # traefik.http.routers.dashboard.tls.certResolver: default
-      traefik.http.routers.dashboard.rule: 'Host(`${TRAEFIK_DASHBOARD}`)'
-      traefik.http.routers.dashboard.service: 'api@internal'
-      # fix miss port error.
-      traefik.http.services.dashboard.loadbalancer.server.port: 8080
 
 networks:
   traefik:

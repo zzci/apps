@@ -1,12 +1,10 @@
-version: '3'
-
 services:
   dexidp:
     image: dexidp/dex
     container_name: dexidp
     restart: unless-stopped
     networks:
-      - proxy
+      - traefik
     command: "dex serve /app/config.yaml"
     user: root
     volumes:
@@ -14,6 +12,6 @@ services:
       - ./data:/app/data
 
 networks:
-  proxy:
+  traefik:
     external: true
-    name: proxy
+    name: traefik

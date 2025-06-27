@@ -9,11 +9,11 @@ web:
   http: 0.0.0.0:5556
   allowedOrigins: ["*"]
 staticClients:
-  - id: NetBird
+  - id: test
     redirectURIs:
       - 'http://127.0.0.1:5555/callback'
       - '/device/callback'
-    name: 'NetBird'
+    name: 'test'
     public: true
 
 connectors:

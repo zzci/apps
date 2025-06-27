@@ -1,30 +1,21 @@
-version: "3.7"
-
 services:
   desktop:
-    container_name: ${POD_NAME}
-    hostname: ${POD_HOSTNAME}
-    image: ${POD_IMAGE}
+    container_name: desktop
+    hostname: desktop
+    image: zzci/desktop
     restart: always
     volumes:
-      - ${POD_DATA}:/work
+      - ./work:/work
     devices:
       - /dev/fuse:/dev/fuse
-    privileged: true
+    # privileged: true
+    security_opt:
+      - seccomp:unconfined
     shm_size: "2gb"
     networks:
       - traefik
-    labels:
-      - "traefik.enable=true"
-      - "traefik.docker.network=${TRAEFIK_NETWORK}"
-      - "traefik.http.routers.${POD_NAME}.middlewares=basicAuth"
-      - "traefik.http.routers.${POD_NAME}.entrypoints=${TRAEFIK_ENTRYPOINT}"
-      - "traefik.http.routers.${POD_NAME}.tls.certResolver=default"
-      - "traefik.http.routers.${POD_NAME}.rule=Host(`${POD_URL}`)"
-      - "traefik.http.routers.${POD_NAME}.service=${POD_NAME}"
-      - "traefik.http.services.${POD_NAME}.loadbalancer.server.port=80"
 
 networks:
   traefik:
     external: true
-    name: ${TRAEFIK_NETWORK}
+    name: traefik

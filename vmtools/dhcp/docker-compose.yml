@@ -1,5 +1,3 @@
-version: '3'
-
 services:
   dhcpd:
     container_name: dhcpd

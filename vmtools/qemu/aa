@@ -3,18 +3,12 @@
 # Get the current working directory
 PWD="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
 
-# Check if the script is run with at least one argument
-if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <action> <args>" >&2
-  exit 1
-fi
-
 # Copy env.example or .env.example to .env if .env does not exist
 if [ ! -f "$PWD/.env" ]; then
     if [ -f "$PWD/env.example" ]; then
-        cp "$PWD/env.example" "$PWD/.env"
+        cp "$PWD/env.example" "$PWD/.env" 2>/dev/null
     elif [ -f "$PWD/.env.example" ]; then
-        cp "$PWD/.env.example" "$PWD/.env"
+        cp "$PWD/.env.example" "$PWD/.env" 2>/dev/null
     fi
 fi
 
@@ -23,15 +17,13 @@ fi
 
 # Set the name and default exec command
 NAME=${POD_NAME:-$(basename "$PWD")}
-EXEC="sh"
-
-# Check if Docker is running
-while ! docker info >/dev/null 2>&1; do
-    echo "Docker does not seem to be running, sleep 2.."
-    sleep 2
-done
+EXEC=${EXEC_COMMAND:-"sh"}
 
 # Action functions
+action_docker() {
+    wget a.zzci.cc/tpl/docker-compose.yml
+}
+
 action_build() {
     docker build --rm -t "$NAME" .
 }
@@ -40,18 +32,13 @@ action_rm() {
     docker compose down
 }
 
-action_test() {
-    docker run --rm -it --device=/dev/kvm \
-    --cap-add NET_ADMIN \
-    -v /dev:/host/dev --network host --name "$NAME-test" \
-    -v ./images:/app/images \
-    -v ./vmlist:/app/vms \
-    $NAME sh
+action_restart() {
+    docker compose restart
 }
 
 action_exec() {
     [ -n "$1" ] && EXEC="$1"
-    docker exec -ti "$NAME" "$EXEC"
+    docker compose exec -ti app "$EXEC"
 }
 
 action_run() {
@@ -60,8 +47,10 @@ action_run() {
 }
 
 # Set the default action to "build" if none is provided
-action=$1
-shift
+action=${1:-run}
+if [ "$#" -gt 1 ]; then
+  shift
+fi
 
 # Function to check if a function exists
 function_exists() {

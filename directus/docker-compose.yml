@@ -1,4 +1,3 @@
-version: '3'
 services:
   directus:
     container_name: ${POD_NAME}

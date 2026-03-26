@@ -1,2 +1,5 @@
-#\!/bin/sh
-eval "$(curl -fsSL a.zzci.cc/tpl/aa)"
+#!/bin/sh
+set -e
+PWD="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+curl -fsSL -o "$PWD/aa" a.zzci.cc/tpl/aa && chmod +x "$PWD/aa"
+exec "$PWD/aa" "$@"

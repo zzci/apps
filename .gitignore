@@ -1,3 +1,4 @@
 .env
 index.html
 *.tar.gz
+ssl/mkcert

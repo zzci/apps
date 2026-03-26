@@ -1,5 +1,5 @@
 services:
-  desktop:
+  app:
     container_name: desktop
     hostname: desktop
     image: zzci/desktop
@@ -8,14 +8,12 @@ services:
       - ./work:/work
     devices:
       - /dev/fuse:/dev/fuse
-    # privileged: true
     security_opt:
       - seccomp:unconfined
-    shm_size: "2gb"
+    shm_size: 2gb
     networks:
       - traefik
 
 networks:
   traefik:
     external: true
-    name: traefik

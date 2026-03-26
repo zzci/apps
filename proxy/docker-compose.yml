@@ -1,14 +1,15 @@
 services:
-  proxy:
+  app:
     image: zzci/proxy
     container_name: proxy
-    hostname: 'proxy'
+    hostname: proxy
+    restart: always
     volumes:
       - ./work:/work
     cap_add:
       - NET_ADMIN
     ports:
-      - '4433:4433'
-      - '4434:4434'
-      - '4433:4433/udp'
-      - '4434:4434/udp'
+      - 4433:4433
+      - 4434:4434
+      - 4433:4433/udp
+      - 4434:4434/udp

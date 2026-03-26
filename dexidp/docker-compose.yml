@@ -1,17 +1,15 @@
 services:
-  dexidp:
-    image: dexidp/dex
+  app:
+    image: dexidp/dex:v2.39.1
     container_name: dexidp
     restart: unless-stopped
-    networks:
-      - traefik
-    command: "dex serve /app/config.yaml"
-    user: root
+    command: dex serve /app/config.yaml
     volumes:
       - ./config/config.yaml:/app/config.yaml
       - ./data:/app/data
+    networks:
+      - traefik
 
 networks:
   traefik:
     external: true
-    name: traefik

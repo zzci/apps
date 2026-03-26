@@ -5,6 +5,29 @@ services:
     restart: always
     volumes:
       - ./html:/public
+    environment:
+      # SERVER_HOST: "::"
+      # SERVER_PORT: 80
+      # SERVER_ROOT: /public
+      # SERVER_LOG_LEVEL: info
+      # SERVER_CORS_ALLOW_ORIGINS: "*"
+      # SERVER_CORS_ALLOW_METHODS: "GET, HEAD, OPTIONS"
+      # SERVER_CORS_ALLOW_HEADERS: "Content-Type, Authorization"
+      # SERVER_COMPRESSION: true
+      # SERVER_COMPRESSION_LEVEL: default
+      # SERVER_DIRECTORY_LISTING: false
+      # SERVER_CACHE_CONTROL_HEADERS: true
+      # SERVER_SECURITY_HEADERS: false
+      # SERVER_INDEX_FILES: "index.html"
+      # SERVER_REDIRECT_TRAILING_SLASH: true
+      # SERVER_IGNORE_HIDDEN_FILES: false
+      # SERVER_HEALTH: false
+      # SERVER_MAINTENANCE_MODE: false
+      # SERVER_BASIC_AUTH: ""
+      # SERVER_GRACE_PERIOD: 0
+      # SERVER_PAGE404: ""
+      # SERVER_PAGE50X: ""
+      SERVER_LOG_LEVEL: info
     networks:
       - traefik
 

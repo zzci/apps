@@ -10,7 +10,7 @@ services:
       # SERVER_HOST: "::"           # bind address
       # SERVER_PORT: 80             # listen port
       # SERVER_ROOT: /public        # document root
-      SERVER_LOG_LEVEL: info        # error|warn|info|debug|trace
+      SERVER_LOG_LEVEL: warn        # error|warn|info|debug|trace
 
       ## Compression
       # SERVER_COMPRESSION: true    # gzip/brotli auto-compression
@@ -37,7 +37,7 @@ services:
 
       ## Index / SPA
       # SERVER_INDEX_FILES: "index.html"
-      # SERVER_PAGE_FALLBACK: ""    # SPA fallback (e.g. /index.html)
+      SERVER_PAGE_FALLBACK: /index.html  # SPA fallback
       # SERVER_PAGE404: ""          # custom 404 page
       # SERVER_PAGE50X: ""          # custom 50x page
 

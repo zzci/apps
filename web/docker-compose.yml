@@ -6,28 +6,51 @@ services:
     volumes:
       - ./html:/public
     environment:
-      # SERVER_HOST: "::"
-      # SERVER_PORT: 80
-      # SERVER_ROOT: /public
-      # SERVER_LOG_LEVEL: info
+      ## Core
+      # SERVER_HOST: "::"           # bind address
+      # SERVER_PORT: 80             # listen port
+      # SERVER_ROOT: /public        # document root
+      SERVER_LOG_LEVEL: info        # error|warn|info|debug|trace
+
+      ## Compression
+      # SERVER_COMPRESSION: true    # gzip/brotli auto-compression
+      # SERVER_COMPRESSION_LEVEL: default  # fastest|best|default
+      # SERVER_COMPRESSION_STATIC: false   # serve pre-compressed .gz/.br files
+
+      ## CORS
       # SERVER_CORS_ALLOW_ORIGINS: "*"
-      # SERVER_CORS_ALLOW_METHODS: "GET, HEAD, OPTIONS"
       # SERVER_CORS_ALLOW_HEADERS: "Content-Type, Authorization"
-      # SERVER_COMPRESSION: true
-      # SERVER_COMPRESSION_LEVEL: default
-      # SERVER_DIRECTORY_LISTING: false
+      # SERVER_CORS_EXPOSE_HEADERS: ""
+
+      ## Security
+      # SERVER_SECURITY_HEADERS: false  # HSTS, X-Frame-Options, etc.
+      # SERVER_BASIC_AUTH: false
+      # SERVER_BASIC_AUTH_FILE: ""      # path to .htpasswd
+
+      ## Cache
       # SERVER_CACHE_CONTROL_HEADERS: true
-      # SERVER_SECURITY_HEADERS: false
+
+      ## Directory listing
+      # SERVER_DIRECTORY_LISTING: false
+      # SERVER_DIRECTORY_LISTING_ORDER: 6
+      # SERVER_DIRECTORY_LISTING_FORMAT: html  # html|json
+
+      ## Index / SPA
       # SERVER_INDEX_FILES: "index.html"
-      # SERVER_REDIRECT_TRAILING_SLASH: true
-      # SERVER_IGNORE_HIDDEN_FILES: false
-      # SERVER_HEALTH: false
-      # SERVER_MAINTENANCE_MODE: false
-      # SERVER_BASIC_AUTH: ""
-      # SERVER_GRACE_PERIOD: 0
-      # SERVER_PAGE404: ""
-      # SERVER_PAGE50X: ""
-      SERVER_LOG_LEVEL: info
+      # SERVER_PAGE_FALLBACK: ""    # SPA fallback (e.g. /index.html)
+      # SERVER_PAGE404: ""          # custom 404 page
+      # SERVER_PAGE50X: ""          # custom 50x page
+
+      ## TLS (if terminating TLS at container level)
+      # SERVER_TLS_CERT: ""
+      # SERVER_TLS_KEY: ""
+      # SERVER_HTTP2: false
+
+      ## Health check endpoint
+      # SERVER_HEALTH: false        # enables /health
+
+      ## Graceful shutdown
+      # SERVER_GRACE_PERIOD: 0      # seconds before forced shutdown
     networks:
       - traefik
 

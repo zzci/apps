@@ -28,6 +28,10 @@ action_build() {
     docker build --rm -t "$NAME" .
 }
 
+action_pack() {
+    docker save $NAME | gzip > $NAME.gz
+}
+
 action_rm() {
     docker compose down
 }

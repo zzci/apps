@@ -1,9 +1,7 @@
-version: "3"
-
 services:
   clickhouse:
     container_name: uptrace-db
-    image: clickhouse/clickhouse-server:22.3.17.13-alpine
+    image: clickhouse/clickhouse-server:24-alpine
     restart: on-failure
     environment:
       CLICKHOUSE_DB: uptrace
@@ -19,71 +17,46 @@ services:
 
   uptrace:
     container_name: uptrace
-    image: uptrace/uptrace:1.2.4
+    image: uptrace/uptrace:latest
     restart: on-failure
     volumes:
       - ./data/uptrace:/var/lib/uptrace
       - ./config/uptrace.yml:/etc/uptrace/uptrace.yml
-    # environment:
-    #   - DEBUG=1
     depends_on:
       clickhouse:
         condition: service_healthy
     networks:
-      - proxy
+      - traefik
       - uptrace
 
   alertmanager:
     container_name: uptrace-alert
-    image: prom/alertmanager:v0.25.0
+    image: prom/alertmanager:v0.28.0
     restart: on-failure
     user: root
     volumes:
       - ./config/alertmanager.yml:/etc/alertmanager/config.yml
       - ./data/alertmanager:/alertmanager
     command:
-      - "--config.file=/etc/alertmanager/config.yml"
-      - "--storage.path=/alertmanager"
+      - --config.file=/etc/alertmanager/config.yml
+      - --storage.path=/alertmanager
     networks:
       - uptrace
 
   otel-collector:
     container_name: uptrace-otel
-    image: otel/opentelemetry-collector-contrib:0.69.0
+    image: otel/opentelemetry-collector-contrib:0.98.0
     restart: on-failure
     command:
-      - "--config=/etc/otelcol/config.yaml"
+      - --config=/etc/otelcol/config.yaml
     volumes:
       - ./config/otel.yml:/etc/otelcol/config.yaml
     networks:
       - uptrace
-      - proxy
-
-  # vector:
-  #   container_name: uptrace-vector
-  #   image: timberio/vector:0.25.1-alpine
-  #   # environment:
-  #   #   VECTOR_LOG: DEBUG
-  #   volumes:
-  #     - ./config/vector.toml:/etc/vector/vector.toml:ro
-  #   networks:
-  #     - uptrace
-  #     - proxy
-
-  # fluent:
-  #   container_name: uptrace-fluent
-  #   image: fluent/fluent-bit:2.0.6
-  #   command:
-  #     - "--config=/fluent/fluent.conf"
-  #   volumes:
-  #     - ./config/fluent.conf:/fluent/fluent.conf:ro
-  #   networks:
-  #     - uptrace
-  #     - proxy
+      - traefik
 
 networks:
   uptrace:
     name: uptrace
-  proxy:
+  traefik:
     external: true
-    name: proxy

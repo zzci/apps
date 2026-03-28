@@ -1,13 +1,13 @@
 services:
-  station:
+  app:
+    image: zzci/station
     container_name: station
     hostname: station
-    image: zzci/station
     restart: always
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - ./work:/work
       - ./root:/root
-      - /var/run/docker.sock:/var/run/docker.sock
       - /app:/app
     networks:
       - traefik
@@ -15,4 +15,3 @@ services:
 networks:
   traefik:
     external: true
-    name: traefik

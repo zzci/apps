@@ -1,0 +1,59 @@
+services:
+  app:
+    container_name: web
+    image: zzci/web
+    restart: always
+    volumes:
+      - ./html:/public
+    environment:
+      ## Core
+      # SERVER_HOST: "::"           # bind address
+      # SERVER_PORT: 80             # listen port
+      # SERVER_ROOT: /public        # document root
+      SERVER_LOG_LEVEL: warn        # error|warn|info|debug|trace
+
+      ## Compression
+      # SERVER_COMPRESSION: true    # gzip/brotli auto-compression
+      # SERVER_COMPRESSION_LEVEL: default  # fastest|best|default
+      # SERVER_COMPRESSION_STATIC: false   # serve pre-compressed .gz/.br files
+
+      ## CORS
+      # SERVER_CORS_ALLOW_ORIGINS: "*"
+      # SERVER_CORS_ALLOW_HEADERS: "Content-Type, Authorization"
+      # SERVER_CORS_EXPOSE_HEADERS: ""
+
+      ## Security
+      # SERVER_SECURITY_HEADERS: false  # HSTS, X-Frame-Options, etc.
+      # SERVER_BASIC_AUTH: false
+      # SERVER_BASIC_AUTH_FILE: ""      # path to .htpasswd
+
+      ## Cache
+      # SERVER_CACHE_CONTROL_HEADERS: true
+
+      ## Directory listing
+      # SERVER_DIRECTORY_LISTING: false
+      # SERVER_DIRECTORY_LISTING_ORDER: 6
+      # SERVER_DIRECTORY_LISTING_FORMAT: html  # html|json
+
+      ## Index / SPA
+      # SERVER_INDEX_FILES: "index.html"
+      SERVER_PAGE_FALLBACK: /index.html  # SPA fallback
+      # SERVER_PAGE404: ""          # custom 404 page
+      # SERVER_PAGE50X: ""          # custom 50x page
+
+      ## TLS (if terminating TLS at container level)
+      # SERVER_TLS_CERT: ""
+      # SERVER_TLS_KEY: ""
+      # SERVER_HTTP2: false
+
+      ## Health check endpoint
+      # SERVER_HEALTH: false        # enables /health
+
+      ## Graceful shutdown
+      # SERVER_GRACE_PERIOD: 0      # seconds before forced shutdown
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

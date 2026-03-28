@@ -1,14 +1,11 @@
-version: "3.7"
-
 services:
-  curl:
+  app:
     image: hoppscotch/hoppscotch:latest
-    container_name: curl
+    container_name: hoppscotch
     restart: always
     networks:
-      - proxy
+      - traefik
 
 networks:
-  proxy:
+  traefik:
     external: true
-    name: proxy

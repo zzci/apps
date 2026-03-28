@@ -1,0 +1,17 @@
+[global]
+server_name = "im.roy.me"
+new_user_displayname_suffix = ""
+database_path = "/var/lib/tuwunel"
+address = ["0.0.0.0"]
+port = 8008
+allow_federation = false
+require_auth_for_profile_requests = true
+show_all_local_users_in_user_directory = false
+allow_registration = true
+registration_token = '8bff15fed5139cfa8842ed3fbd84108c'
+login_via_existing_session = true
+login_via_token = true
+login_with_password = true
+login_token_ttl = 120000
+access_token_ttl = 604800
+log = "info"

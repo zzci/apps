@@ -2,3 +2,4 @@
 index.html
 *.tar.gz
 ssl/mkcert
+dist/

@@ -1,27 +1,83 @@
-#!/bin/bash
+#!/bin/sh
+set -e
 
-[ "$1" = "pack" ] && {
-    for app in $(ls ./); do
-        if [ -d $app ]; then
-            echo "Pack $app to $app.tar.gz"
-            tar -czf $app.tar.gz $app
-        fi
+ROOT="$(cd -- "$(dirname "$0")" >/dev/null 2>&1 && pwd -P)"
+TPL_URL="a.zzci.cc/tpl/aa"
+DIST="$ROOT/dist"
+
+# sync aa template to each app directory
+action_sync() {
+    echo "Downloading aa template..."
+    curl -fsSL "$TPL_URL" -o /tmp/aa.tpl
+    chmod +x /tmp/aa.tpl
+
+    for dir in "$ROOT"/*/; do
+        name="$(basename "$dir")"
+        case "$name" in dist|ssl|vmtools) continue ;; esac
+        [ ! -f "$dir/docker-compose.yml" ] && [ ! -f "$dir/docker-compose.yaml" ] && continue
+        cp /tmp/aa.tpl "$dir/aa"
+        echo "  -> $name/aa"
     done
-    rm -rf node_modules.tar.gz
+
+    rm -f /tmp/aa.tpl
+    echo "Done."
 }
 
-[ "$1" = "gen" ] && {
-    html='<h1>Apps</h1><p>'
-    for app in $(ls *.tar.gz); do
-        html+="<a href='$app'>$app</a><br>"
+# build tarballs and index page
+action_build() {
+    rm -rf "$DIST"
+    mkdir -p "$DIST"
+
+    for dir in "$ROOT"/*/; do
+        name="$(basename "$dir")"
+        case "$name" in dist|.github) continue ;; esac
+        tar czf "$DIST/${name}.tar.gz" -C "$dir" .
+        echo "  -> ${name}.tar.gz"
     done
-    html+="</p>"
 
-    echo $html > index.html
+    cat > "$DIST/index.html" <<'HTML'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>apps.zzci.cc</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#333}
+h1{font-size:1.4em;margin-bottom:16px}
+ul{list-style:none}
+li{padding:8px 0;border-bottom:1px solid #eee;display:flex;justify-content:space-between}
+a{color:#0969da;text-decoration:none}
+a:hover{text-decoration:underline}
+.size{color:#888;font-size:.85em}
+</style>
+</head>
+<body>
+<h1>apps.zzci.cc</h1>
+<ul>
+HTML
+
+    for f in "$DIST"/*.tar.gz; do
+        fname="$(basename "$f")"
+        size="$(du -h "$f" | cut -f1)"
+        name="${fname%.tar.gz}"
+        echo "<li><a href=\"$fname\">$name</a><span class=\"size\">$size</span></li>" >> "$DIST/index.html"
+    done
+
+    cat >> "$DIST/index.html" <<'HTML'
+</ul>
+</body>
+</html>
+HTML
+
+    echo "Build complete: $DIST"
 }
 
-[ "$1" = "clean" ] && {
-    rm -rf *.tar.gz index.html
-}
+action=${1:-build}
+shift 2>/dev/null || true
 
-exit 0
+case "$action" in
+    sync|build) "action_$action" "$@" ;;
+    *) echo "Usage: $0 {sync|build}"; exit 1 ;;
+esac

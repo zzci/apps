@@ -9,10 +9,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Sync aa & Build
-        run: |
-          ./aa sync
-          ./aa build
+      - name: Build
+        run: ./aa build
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

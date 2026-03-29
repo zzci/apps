@@ -31,7 +31,7 @@ action_build() {
     for dir in "$ROOT"/*/; do
         name="$(basename "$dir")"
         case "$name" in dist|.github) continue ;; esac
-        tar czf "$DIST/${name}.tar.gz" -C "$dir" .
+        tar czf "$DIST/${name}.tar.gz" -C "$ROOT" "$name"
         echo "  -> ${name}.tar.gz"
     done
 

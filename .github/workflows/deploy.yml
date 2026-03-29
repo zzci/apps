@@ -1,0 +1,66 @@
+name: Deploy to Cloudflare Pages
+
+on:
+  push:
+    branches: [cf]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build site
+        run: |
+          mkdir -p dist
+
+          for dir in */; do
+            name="${dir%/}"
+            # skip hidden dirs and dist
+            [[ "$name" == .* || "$name" == dist ]] && continue
+            tar czf "dist/${name}.tar.gz" -C "$name" .
+          done
+
+          # generate index
+          cd dist
+          cat > index.html <<'HEADER'
+          <!DOCTYPE html>
+          <html lang="en">
+          <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>apps.zzci.cc</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { font-family: -apple-system, system-ui, sans-serif; max-width: 640px; margin: 40px auto; padding: 0 20px; color: #333; }
+            h1 { font-size: 1.4em; margin-bottom: 16px; }
+            ul { list-style: none; }
+            li { padding: 8px 0; border-bottom: 1px solid #eee; }
+            a { color: #0969da; text-decoration: none; }
+            a:hover { text-decoration: underline; }
+            .size { color: #888; font-size: 0.85em; margin-left: 8px; }
+          </style>
+          </head>
+          <body>
+          <h1>apps.zzci.cc</h1>
+          <ul>
+          HEADER
+
+          for f in *.tar.gz; do
+            size=$(du -h "$f" | cut -f1)
+            name="${f%.tar.gz}"
+            echo "<li><a href=\"$f\">$name</a><span class=\"size\">$size</span></li>" >> index.html
+          done
+
+          cat >> index.html <<'FOOTER'
+          </ul>
+          </body>
+          </html>
+          FOOTER
+
+      - name: Deploy to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          accountId: ${{ secrets.CF_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=apps-zzci-cc

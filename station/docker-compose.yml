@@ -1,16 +1,26 @@
 services:
   app:
-    image: zzci/station
     container_name: station
     hostname: station
+    image: zzci/dev
     restart: always
+    working_dir: /app
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
       - ./work:/work
       - ./root:/root
+      - /var/run/docker.sock:/var/run/docker.sock
       - /app:/app
     networks:
       - traefik
+  ttyd:
+    container_name: station-ttyd
+    image: tsl0922/ttyd
+    restart: always
+    privileged: true
+    pid: host
+    networks:
+      - traefik
+    command: ttyd -p 80 -W nsenter -t 1 -m -u -n -i bash
 
 networks:
   traefik:

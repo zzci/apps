@@ -50,8 +50,22 @@ action_run() {
     docker compose up -d
 }
 
-# Set the default action to "build" if none is provided
-action=${1:-run}
+action_help() {
+    echo "Usage: $0 <action> [args]"
+    echo ""
+    echo "Actions:"
+    echo "  docker   Download docker-compose.yml"
+    echo "  build    Build docker image"
+    echo "  pack     Export image to .gz archive"
+    echo "  run      Start services (down + up -d)"
+    echo "  rm       Stop and remove services"
+    echo "  restart  Restart services"
+    echo "  exec     Exec into app container (default: sh)"
+    echo "  help     Show this help message"
+}
+
+# Set the default action to "help" if none is provided
+action=${1:-help}
 if [ "$#" -gt 1 ]; then
   shift
 fi
@@ -66,6 +80,7 @@ if function_exists "action_$action"; then
     "action_$action" "$@"
 else
     echo "Error: Unknown action: '$action'"
-    echo "Usage: $0 <action> <args>"
+    echo ""
+    action_help
     exit 1
 fi

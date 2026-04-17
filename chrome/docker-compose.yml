@@ -1,0 +1,14 @@
+services:
+  app:
+    container_name: chrome
+    image: zzci/chrome
+    restart: always
+    shm_size: 2g
+    security_opt:
+      - seccomp:unconfined
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: true

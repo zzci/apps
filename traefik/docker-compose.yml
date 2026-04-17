@@ -8,8 +8,7 @@ services:
       - 0.0.0.0:80:80
       - 0.0.0.0:443:443/tcp
     networks:
-      traefik:
-        ipv4_address: ${TRAEFIK_IPV4:-172.18.0.2}
+      - traefik
     volumes:
       - ./data:/data
       - ./services:/services
@@ -25,7 +24,4 @@ services:
 
 networks:
   traefik:
-    name: ${TRAEFIK_NETWORK:-traefik}
-    ipam:
-      config:
-        - subnet: ${TRAEFIK_SUBNET:-172.18.0.0/16}
+    external: true

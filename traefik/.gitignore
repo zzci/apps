@@ -2,3 +2,5 @@
 data/ssl/
 data/logs/
 services/
+data/auth/
+data/auth.yml
